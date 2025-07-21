@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"],
+			"@/*": ["./*"],
 			"@trackyrs/ui/*": ["../../packages/ui/src/*"]
 		},
 		"plugins": [
