@@ -1,6 +1,6 @@
 import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { characterTable } from "@/database/schemas/myanimelist/character/character-schema";
-import { mangaTable } from "@/database/schemas/myanimelist/manga/manga-schema";
+import { characterTable } from "@/schemas/myanimelist/character/character-schema";
+import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
 
 export type CharacterRole = "Main" | "Supporting";
 

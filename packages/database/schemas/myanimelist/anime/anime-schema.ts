@@ -9,10 +9,10 @@ import {
 	timestamp,
 	varchar,
 } from "drizzle-orm/pg-core";
-import { animeEpisodeTable } from "@/database/schemas/myanimelist/anime/anime-episode-schema";
-import { animeToCharacterTable } from "@/database/schemas/myanimelist/anime/anime-to-character-schema";
-import { animeToGenreTable } from "@/database/schemas/myanimelist/anime/anime-to-genre-schema";
-import { animeToProducersTable } from "@/database/schemas/myanimelist/anime/anime-to-producers-schema";
+import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
+import { animeToCharacterTable } from "@/schemas/myanimelist/anime/anime-to-character-schema";
+import { animeToGenreTable } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
+import { animeToProducersTable } from "@/schemas/myanimelist/anime/anime-to-producers-schema";
 
 export type AnimeType =
 	| "TV"

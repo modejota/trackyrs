@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { animeTable } from "@/database/schemas/myanimelist/anime/anime-schema";
-import { characterTable } from "@/database/schemas/myanimelist/character/character-schema";
+import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
+import { characterTable } from "@/schemas/myanimelist/character/character-schema";
 
 export type CharacterRole = "Main" | "Supporting";
 

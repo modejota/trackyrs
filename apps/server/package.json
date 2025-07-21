@@ -5,15 +5,12 @@
 		"start": "NODE_ENV=production bun run src/server.ts"
 	},
 	"dependencies": {
+		"@trackyrs/database": "workspace:*",
 		"dotenv": "^17.2.0",
-		"drizzle-orm": "^0.44.3",
-		"hono": "^4.8.5",
-		"pg": "^8.16.3"
+		"hono": "^4.8.5"
 	},
 	"devDependencies": {
-		"@types/bun": "latest",
-		"@types/pg": "^8.15.4",
-		"drizzle-kit": "^0.31.4"
+		"@types/bun": "latest"
 	},
 	"engines": {
 		"bun": ">=1.2.19"

@@ -1,0 +1,13 @@
+{
+	"extends": "@trackyrs/typescript-config/base.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"rootDir": "./",
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"include": ["./**/*"],
+	"exclude": ["node_modules", "dist"]
+}

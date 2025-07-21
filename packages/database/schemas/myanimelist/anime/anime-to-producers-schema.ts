@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { animeProducersTable } from "@/database/schemas/myanimelist/anime/anime-producer-schema";
-import { animeTable } from "@/database/schemas/myanimelist/anime/anime-schema";
+import { animeProducersTable } from "@/schemas/myanimelist/anime/anime-producer-schema";
+import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
 export type AnimeProducerRole = "Producer" | "Licensor" | "Studio";
 

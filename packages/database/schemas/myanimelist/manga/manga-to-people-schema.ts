@@ -1,6 +1,6 @@
 import { integer, pgTable, serial } from "drizzle-orm/pg-core";
-import { mangaTable } from "@/database/schemas/myanimelist/manga/manga-schema";
-import { peopleTable } from "@/database/schemas/myanimelist/people-schema";
+import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
+import { peopleTable } from "@/schemas/myanimelist/people-schema";
 
 export const mangaToPeopleTable = pgTable("manga_to_people", {
 	id: serial("id").primaryKey(),

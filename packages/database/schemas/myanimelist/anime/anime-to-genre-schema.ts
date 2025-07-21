@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { animeGenreTable } from "@/database/schemas/myanimelist/anime/anime-genre-schema";
-import { animeTable } from "@/database/schemas/myanimelist/anime/anime-schema";
+import { animeGenreTable } from "@/schemas/myanimelist/anime/anime-genre-schema";
+import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
 export type AnimeGenreRole =
 	| "Genres"

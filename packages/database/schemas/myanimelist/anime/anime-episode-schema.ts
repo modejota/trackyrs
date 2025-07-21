@@ -7,7 +7,7 @@ import {
 	text,
 	timestamp,
 } from "drizzle-orm/pg-core";
-import { animeTable } from "@/database/schemas/myanimelist/anime/anime-schema";
+import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
 export const animeEpisodeTable = pgTable("anime_episodes", {
 	id: serial("id").primaryKey(),

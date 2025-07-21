@@ -1,6 +1,6 @@
 import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { characterTable } from "@/database/schemas/myanimelist/character/character-schema";
-import { peopleTable } from "@/database/schemas/myanimelist/people-schema";
+import { characterTable } from "@/schemas/myanimelist/character/character-schema";
+import { peopleTable } from "@/schemas/myanimelist/people-schema";
 
 export const characterToPeopleTable = pgTable("character_to_people", {
 	id: serial("id").primaryKey(),

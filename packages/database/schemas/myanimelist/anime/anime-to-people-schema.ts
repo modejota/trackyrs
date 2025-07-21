@@ -1,6 +1,6 @@
 import { integer, jsonb, pgTable, serial } from "drizzle-orm/pg-core";
-import { animeTable } from "@/database/schemas/myanimelist/anime/anime-schema";
-import { peopleTable } from "@/database/schemas/myanimelist/people-schema";
+import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
+import { peopleTable } from "@/schemas/myanimelist/people-schema";
 
 export const animeToPeopleTable = pgTable("anime_to_people", {
 	id: serial("id").primaryKey(),

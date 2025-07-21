@@ -5,7 +5,7 @@ config({ path: [".env.local"], override: true });
 
 export default defineConfig({
 	dialect: "postgresql",
-	schema: "./src/database/schemas/**/*.ts",
+	schema: "./schemas/**/*.ts",
 	out: "./migrations",
 	dbCredentials: {
 		url: process.env.DATABASE_URL as string,

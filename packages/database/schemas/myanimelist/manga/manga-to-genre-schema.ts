@@ -1,6 +1,6 @@
 import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
-import { mangaGenreTable } from "@/database/schemas/myanimelist/manga/manga-genre-schema";
-import { mangaTable } from "@/database/schemas/myanimelist/manga/manga-schema";
+import { mangaGenreTable } from "@/schemas/myanimelist/manga/manga-genre-schema";
+import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
 
 export type MangaGenreRole =
 	| "Genres"
