@@ -1,5 +1,9 @@
 # Turborepo starter
 
+## Environment Variables
+
+All environment variables for the monorepo are now managed in the root `.env` and `.env.local` files. All apps and packages reference these files for configuration. Please add/update your environment variables in the root files only.
+
 This Turborepo starter is maintained by the Turborepo core team.
 
 ## Using this example
