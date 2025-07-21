@@ -1,0 +1,19 @@
+{
+	"extends": "@trackyrs/typescript-config/base.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"incremental": true,
+		"outDir": "dist",
+		"rootDir": "src",
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": ["src/**/*.ts", "cli/*.ts"],
+	"exclude": ["node_modules", "dist"]
+}
