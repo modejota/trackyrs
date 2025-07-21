@@ -11,3 +11,14 @@ export const mangaToPeopleTable = pgTable("manga_to_people", {
 		.notNull()
 		.references(() => peopleTable.id),
 });
+
+export interface MangaToPeople {
+	id: number;
+	mangaId: number;
+	peopleId: number;
+}
+
+export interface NewMangaToPeople {
+	mangaId: number;
+	peopleId: number;
+}

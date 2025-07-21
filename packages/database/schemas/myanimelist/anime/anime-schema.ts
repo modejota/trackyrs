@@ -14,40 +14,61 @@ import { animeToCharacterTable } from "@/schemas/myanimelist/anime/anime-to-char
 import { animeToGenreTable } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
 import { animeToProducersTable } from "@/schemas/myanimelist/anime/anime-to-producers-schema";
 
-export type AnimeType =
-	| "TV"
-	| "Movie"
-	| "OVA"
-	| "Special"
-	| "ONA"
-	| "Music"
-	| "CM"
-	| "PV"
-	| "TV Special"
-	| null;
-export type AnimeStatus =
-	| "Finished Airing"
-	| "Currently Airing"
-	| "Not yet aired";
-export type AnimeRating =
-	| "G - All Ages"
-	| "PG - Children"
-	| "PG-13 - Teens 13 or older"
-	| "R - 17+ (violence & profanity)"
-	| "R+ - Mild Nudity"
-	| "Rx - Hentai"
-	| null;
+export enum AnimeType {
+	TV = "TV",
+	OVA = "OVA",
+	MOVIE = "Movie",
+	SPECIAL = "Special",
+	ONA = "ONA",
+	MUSIC = "Music",
+	CM = "CM",
+	PV = "PV",
+	TV_SPECIAL = "TV Special",
+}
+
+export type AnimeTypeNullable = AnimeType | null;
+
+export enum AnimeStatus {
+	FINISHED_AIRING = "Finished Airing",
+	CURRENTLY_AIRING = "Currently Airing",
+	NOT_YET_AIRED = "Not yet aired",
+}
+
+export type AnimeStatusNullable = AnimeStatus | null;
+
+export enum Rating {
+	G = "G - All Ages",
+	PG = "PG - Children",
+	PG_13 = "PG-13 - Teens 13 or older",
+	R_17 = "R - 17+ (violence & profanity)",
+	R_PLUS = "R+ - Mild Nudity",
+	RX = "Rx - Hentai",
+}
+
+export type RatingNullable = Rating | null;
+
+export enum Season {
+	WINTER = "winter",
+	SPRING = "spring",
+	SUMMER = "summer",
+	FALL = "fall",
+}
+
+export type SeasonNullable = Season | null;
+
 export type AnimeSeason = "spring" | "summer" | "fall" | "winter" | null;
 
-export type DaysOfTheWeek =
-	| "Mondays"
-	| "Tuesdays"
-	| "Wednesdays"
-	| "Thursdays"
-	| "Fridays"
-	| "Saturdays"
-	| "Sundays"
-	| null;
+export enum DaysOfWeek {
+	MONDAY = "Mondays",
+	TUESDAY = "Tuesdays",
+	WEDNESDAY = "Wednesdays",
+	THURSDAY = "Thursdays",
+	FRIDAY = "Fridays",
+	SATURDAY = "Saturdays",
+	SUNDAY = "Sundays",
+}
+
+export type DaysOfWeekNullable = DaysOfWeek | null;
 
 export const animeTable = pgTable("animes", {
 	id: serial("id").primaryKey(),
@@ -61,20 +82,22 @@ export const animeTable = pgTable("animes", {
 	titleSynonyms: jsonb("title_synonyms")
 		.$type<string[]>()
 		.default(sql`'[]'::jsonb`),
-	type: varchar("type", { length: 10 }).$type<AnimeType>(),
+	type: varchar("type", { length: 16 }).$type<AnimeTypeNullable>(),
 	source: text("source"),
 	numberEpisodes: integer("number_episodes"),
-	status: varchar("status", { length: 16 }).$type<AnimeStatus>(),
+	status: varchar("status", { length: 32 }).$type<AnimeStatusNullable>(),
 	airing: boolean("airing").notNull().default(false),
 	airedFrom: timestamp("aired_from", { mode: "string", withTimezone: false }),
 	airedTo: timestamp("aired_to", { mode: "string", withTimezone: false }),
 	duration: integer("duration"),
-	rating: varchar("rating", { length: 32 }).$type<AnimeRating>(),
+	rating: varchar("rating", { length: 32 }).$type<RatingNullable>(),
 	synopsis: text("synopsis"),
 	background: text("background"),
-	season: varchar("season", { length: 6 }).$type<AnimeSeason>(),
+	season: varchar("season", { length: 8 }).$type<SeasonNullable>(),
 	year: integer("year"),
-	broadcastDay: varchar("broadcast_day", { length: 10 }).$type<DaysOfTheWeek>(),
+	broadcastDay: varchar("broadcast_day", {
+		length: 10,
+	}).$type<DaysOfWeekNullable>(),
 	broadcastTime: varchar("broadcast_time", { length: 5 }),
 	broadcastTimezone: varchar("broadcast_timezone", { length: 16 }),
 	theme: jsonb("theme")

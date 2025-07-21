@@ -10,19 +10,23 @@ import {
 	varchar,
 } from "drizzle-orm/pg-core";
 
-export type MangaType =
-	| "Manga"
-	| "Novel"
-	| "Light Novel"
-	| "One-shot"
-	| "Doujinshi"
-	| "Manhwa"
-	| "Manhua";
-export type MangaStatus =
-	| "Publishing"
-	| "On Hiatus"
-	| "Discontinued"
-	| "Finished";
+export enum MangaType {
+	MANGA = "Manga",
+	NOVEL = "Novel",
+	LIGHT_NOVEL = "Light Novel",
+	ONE_SHOT = "One-shot",
+	DOUJINSHI = "Doujinshi",
+	MANHWA = "Manhwa",
+	MANHUA = "Manhua",
+}
+
+export enum MangaStatus {
+	FINISHED = "Finished",
+	PUBLISHING = "Publishing",
+	ON_HIATUS = "On Hiatus",
+	DISCONTINUED = "Discontinued",
+	NOT_YET_PUBLISHED = "Not yet published",
+}
 
 export const mangaTable = pgTable("mangas", {
 	id: serial("id").primaryKey(),

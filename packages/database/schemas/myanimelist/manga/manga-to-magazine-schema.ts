@@ -11,3 +11,14 @@ export const mangaToMagazineTable = pgTable("manga_to_magazine", {
 		.notNull()
 		.references(() => mangaMagazineTable.id, { onDelete: "cascade" }),
 });
+
+export interface MangaToMagazine {
+	id: number;
+	mangaId: number;
+	magazineId: number;
+}
+
+export interface NewMangaToMagazine {
+	mangaId: number;
+	magazineId: number;
+}

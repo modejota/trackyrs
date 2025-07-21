@@ -3,7 +3,11 @@ import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { animeProducersTable } from "@/schemas/myanimelist/anime/anime-producer-schema";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
-export type AnimeProducerRole = "Producer" | "Licensor" | "Studio";
+export enum AnimeProducerRole {
+	PRODUCER = "Producer",
+	LICENSOR = "Licensor",
+	STUDIO = "Studio",
+}
 
 export const animeToProducersTable = pgTable("anime_to_producers", {
 	id: serial("id").primaryKey(),
@@ -30,5 +34,15 @@ export const animeToProducersRelations = relations(
 	}),
 );
 
-export type AnimeProducer = typeof animeToProducersTable.$inferSelect;
-export type NewAnimeProducer = typeof animeToProducersTable.$inferInsert;
+export interface AnimeToProducers {
+	id: number;
+	animeId: number;
+	producerId: number;
+	role: AnimeProducerRole;
+}
+
+export interface NewAnimeToProducers {
+	animeId: number;
+	producerId: number;
+	role: AnimeProducerRole;
+}

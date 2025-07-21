@@ -12,3 +12,16 @@ export const characterToPeopleTable = pgTable("character_to_people", {
 		.references(() => peopleTable.id, { onDelete: "cascade" }),
 	language: varchar("language", { length: 24 }).notNull(),
 });
+
+export interface CharacterToPeople {
+	id: number;
+	characterId: number;
+	peopleId: number;
+	language: string;
+}
+
+export interface NewCharacterToPeople {
+	characterId: number;
+	personId: number;
+	language: string;
+}

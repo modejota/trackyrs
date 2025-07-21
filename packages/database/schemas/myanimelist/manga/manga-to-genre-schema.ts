@@ -2,11 +2,12 @@ import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { mangaGenreTable } from "@/schemas/myanimelist/manga/manga-genre-schema";
 import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
 
-export type MangaGenreRole =
-	| "Genres"
-	| "Explicit Genres"
-	| "Themes"
-	| "Demographics";
+export enum MangaGenreRole {
+	GENRES = "Genres",
+	EXPLICIT_GENRES = "Explicit Genres",
+	THEMES = "Themes",
+	DEMOGRAPHICS = "Demographics",
+}
 
 export const mangaToGenreTable = pgTable("manga_to_genre", {
 	id: serial("id").primaryKey(),
@@ -18,3 +19,16 @@ export const mangaToGenreTable = pgTable("manga_to_genre", {
 		.references(() => mangaGenreTable.id, { onDelete: "cascade" }),
 	role: varchar("role", { length: 16 }).notNull(),
 });
+
+export interface MangaToGenre {
+	id: number;
+	mangaId: number;
+	genreId: number;
+	role: MangaGenreRole;
+}
+
+export interface NewMangaToGenre {
+	mangaId: number;
+	genreId: number;
+	role: MangaGenreRole;
+}

@@ -3,7 +3,10 @@ import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 import { characterTable } from "@/schemas/myanimelist/character/character-schema";
 
-export type CharacterRole = "Main" | "Supporting";
+export enum CharacterRole {
+	MAIN = "Main",
+	SUPPORTING = "Supporting",
+}
 
 export const animeToCharacterTable = pgTable("anime_to_character", {
 	id: serial("id").primaryKey(),
@@ -29,3 +32,16 @@ export const animeToCharacterRelations = relations(
 		}),
 	}),
 );
+
+export interface AnimeToCharacter {
+	id: number;
+	animeId: number;
+	characterId: number;
+	role: CharacterRole;
+}
+
+export interface NewAnimeToCharacter {
+	animeId: number;
+	characterId: number;
+	role: CharacterRole;
+}

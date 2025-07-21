@@ -3,11 +3,12 @@ import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { animeGenreTable } from "@/schemas/myanimelist/anime/anime-genre-schema";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
-export type AnimeGenreRole =
-	| "Genres"
-	| "Explicit Genres"
-	| "Themes"
-	| "Demographics";
+export enum AnimeGenreRole {
+	GENRES = "Genres",
+	EXPLICIT_GENRES = "Explicit Genres",
+	THEMES = "Themes",
+	DEMOGRAPHICS = "Demographics",
+}
 
 export const animeToGenreTable = pgTable("anime_to_genre", {
 	id: serial("id").primaryKey(),
@@ -33,3 +34,16 @@ export const animeToGenreRelations = relations(
 		}),
 	}),
 );
+
+export interface AnimeToGenre {
+	id: number;
+	animeId: number;
+	genreId: number;
+	role: AnimeGenreRole;
+}
+
+export interface NewAnimeToGenre {
+	animeId: number;
+	genreId: number;
+	role: AnimeGenreRole;
+}
