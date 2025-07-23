@@ -13,15 +13,5 @@ export const characterToPeopleTable = pgTable("character_to_people", {
 	language: varchar("language", { length: 24 }).notNull(),
 });
 
-export interface CharacterToPeople {
-	id: number;
-	characterId: number;
-	peopleId: number;
-	language: string;
-}
-
-export interface NewCharacterToPeople {
-	characterId: number;
-	personId: number;
-	language: string;
-}
+export type CharacterToPeople = typeof characterToPeopleTable.$inferSelect;
+export type NewCharacterToPeople = typeof characterToPeopleTable.$inferInsert;

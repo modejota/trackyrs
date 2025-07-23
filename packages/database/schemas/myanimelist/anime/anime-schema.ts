@@ -56,8 +56,6 @@ export enum Season {
 
 export type SeasonNullable = Season | null;
 
-export type AnimeSeason = "spring" | "summer" | "fall" | "winter" | null;
-
 export enum DaysOfWeek {
 	MONDAY = "Mondays",
 	TUESDAY = "Tuesdays",
@@ -70,13 +68,28 @@ export enum DaysOfWeek {
 
 export type DaysOfWeekNullable = DaysOfWeek | null;
 
+export interface AnimeTitleInfo {
+	type: string;
+	title: string;
+}
+
+export interface AnimeThemeInfo {
+	openings: string[];
+	endings: string[];
+}
+
+export interface AnimeExternalLink {
+	name: string;
+	url: string;
+}
+
 export const animeTable = pgTable("animes", {
 	id: serial("id").primaryKey(),
 	approved: boolean("approved").notNull().default(false),
 	images: text("images").notNull(),
 	trailer: text("trailer"),
 	title: text("title").notNull(),
-	titles: jsonb("titles").notNull().$type<Array<Record<string, string>>>(),
+	titles: jsonb("titles").notNull().$type<Array<AnimeTitleInfo>>(),
 	titleEnglish: text("title_english"),
 	titleJapanese: text("title_japanese"),
 	titleSynonyms: jsonb("title_synonyms")
@@ -101,10 +114,10 @@ export const animeTable = pgTable("animes", {
 	broadcastTime: varchar("broadcast_time", { length: 5 }),
 	broadcastTimezone: varchar("broadcast_timezone", { length: 16 }),
 	theme: jsonb("theme")
-		.$type<Array<Record<string, string>>>()
+		.$type<Array<AnimeThemeInfo>>()
 		.default(sql`'[]'::jsonb`),
 	external: jsonb("external")
-		.$type<Array<Record<string, string>>>()
+		.$type<Array<AnimeExternalLink>>()
 		.default(sql`'[]'::jsonb`),
 });
 

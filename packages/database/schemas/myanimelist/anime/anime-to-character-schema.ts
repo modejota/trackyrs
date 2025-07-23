@@ -1,23 +1,30 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 import { characterTable } from "@/schemas/myanimelist/character/character-schema";
 
-export enum CharacterRole {
-	MAIN = "Main",
-	SUPPORTING = "Supporting",
-}
+export type AnimeCharacterRole = "Main" | "Supporting";
 
-export const animeToCharacterTable = pgTable("anime_to_character", {
-	id: serial("id").primaryKey(),
-	animeId: integer("anime_id")
-		.notNull()
-		.references(() => animeTable.id, { onDelete: "cascade" }),
-	characterId: integer("character_id")
-		.notNull()
-		.references(() => characterTable.id, { onDelete: "cascade" }),
-	role: varchar("role", { length: 12 }).notNull().$type<CharacterRole>(),
-});
+export const animeToCharacterTable = pgTable(
+	"anime_to_character",
+	{
+		id: serial("id").primaryKey(),
+		animeId: integer("anime_id")
+			.notNull()
+			.references(() => animeTable.id, { onDelete: "cascade" }),
+		characterId: integer("character_id")
+			.notNull()
+			.references(() => characterTable.id, { onDelete: "cascade" }),
+		role: varchar("role", { length: 12 }).notNull().$type<AnimeCharacterRole>(),
+	},
+	(table) => ({
+		uniqueAnimeCharacterRole: unique().on(
+			table.animeId,
+			table.characterId,
+			table.role,
+		),
+	}),
+);
 
 export const animeToCharacterRelations = relations(
 	animeToCharacterTable,
@@ -33,15 +40,5 @@ export const animeToCharacterRelations = relations(
 	}),
 );
 
-export interface AnimeToCharacter {
-	id: number;
-	animeId: number;
-	characterId: number;
-	role: CharacterRole;
-}
-
-export interface NewAnimeToCharacter {
-	animeId: number;
-	characterId: number;
-	role: CharacterRole;
-}
+export type AnimeToCharacter = typeof animeToCharacterTable.$inferSelect;
+export type NewAnimeToCharacter = typeof animeToCharacterTable.$inferInsert;

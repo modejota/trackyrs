@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
 import { animeGenreTable } from "@/schemas/myanimelist/anime/anime-genre-schema";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
@@ -10,16 +10,22 @@ export enum AnimeGenreRole {
 	DEMOGRAPHICS = "Demographics",
 }
 
-export const animeToGenreTable = pgTable("anime_to_genre", {
-	id: serial("id").primaryKey(),
-	animeId: integer("anime_id")
-		.notNull()
-		.references(() => animeTable.id, { onDelete: "cascade" }),
-	genreId: integer("genre_id")
-		.notNull()
-		.references(() => animeGenreTable.id, { onDelete: "cascade" }),
-	role: varchar("role", { length: 16 }).notNull().$type<AnimeGenreRole>(),
-});
+export const animeToGenreTable = pgTable(
+	"anime_to_genre",
+	{
+		id: serial("id").primaryKey(),
+		animeId: integer("anime_id")
+			.notNull()
+			.references(() => animeTable.id, { onDelete: "cascade" }),
+		genreId: integer("genre_id")
+			.notNull()
+			.references(() => animeGenreTable.id, { onDelete: "cascade" }),
+		role: varchar("role", { length: 16 }).notNull().$type<AnimeGenreRole>(),
+	},
+	(table) => ({
+		uniqueAnimeGenreRole: unique().on(table.animeId, table.genreId, table.role),
+	}),
+);
 
 export const animeToGenreRelations = relations(
 	animeToGenreTable,
@@ -35,15 +41,5 @@ export const animeToGenreRelations = relations(
 	}),
 );
 
-export interface AnimeToGenre {
-	id: number;
-	animeId: number;
-	genreId: number;
-	role: AnimeGenreRole;
-}
-
-export interface NewAnimeToGenre {
-	animeId: number;
-	genreId: number;
-	role: AnimeGenreRole;
-}
+export type AnimeToGenre = typeof animeToGenreTable.$inferSelect;
+export type NewAnimeToGenre = typeof animeToGenreTable.$inferInsert;

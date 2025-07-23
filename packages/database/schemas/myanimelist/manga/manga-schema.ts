@@ -28,12 +28,17 @@ export enum MangaStatus {
 	NOT_YET_PUBLISHED = "Not yet published",
 }
 
+export interface TitleInfo {
+	type: string;
+	title: string;
+}
+
 export const mangaTable = pgTable("mangas", {
 	id: serial("id").primaryKey(),
 	approved: boolean("approved").notNull().default(false),
 	images: text("images").notNull(),
 	title: text("title").notNull(),
-	titles: jsonb("titles").notNull().$type<Array<Record<string, string>>>(),
+	titles: jsonb("titles").notNull().$type<Array<TitleInfo>>(),
 	titleEnglish: text("title_english"),
 	titleJapanese: text("title_japanese"),
 	titleSynonyms: jsonb("title_synonyms")

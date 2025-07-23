@@ -1,0 +1,1587 @@
+{
+	"id": "49dd6962-ef67-458c-91a7-2a20726d9c14",
+	"prevId": "9388d99d-1c98-4694-9c1a-3524d45f70a9",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.account": {
+			"name": "account",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"account_id": {
+					"name": "account_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"provider_id": {
+					"name": "provider_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"access_token": {
+					"name": "access_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"refresh_token": {
+					"name": "refresh_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"id_token": {
+					"name": "id_token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"access_token_expires_at": {
+					"name": "access_token_expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"refresh_token_expires_at": {
+					"name": "refresh_token_expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"scope": {
+					"name": "scope",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"password": {
+					"name": "password",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"account_user_id_user_id_fk": {
+					"name": "account_user_id_user_id_fk",
+					"tableFrom": "account",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.session": {
+			"name": "session",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ip_address": {
+					"name": "ip_address",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_agent": {
+					"name": "user_agent",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"session_user_id_user_id_fk": {
+					"name": "session_user_id_user_id_fk",
+					"tableFrom": "session",
+					"tableTo": "user",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"session_token_unique": {
+					"name": "session_token_unique",
+					"nullsNotDistinct": false,
+					"columns": ["token"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.user": {
+			"name": "user",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email_verified": {
+					"name": "email_verified",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"image": {
+					"name": "image",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"username": {
+					"name": "username",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"display_username": {
+					"name": "display_username",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"birthdate": {
+					"name": "birthdate",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"user_email_unique": {
+					"name": "user_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				},
+				"user_username_unique": {
+					"name": "user_username_unique",
+					"nullsNotDistinct": false,
+					"columns": ["username"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.verification": {
+			"name": "verification",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"identifier": {
+					"name": "identifier",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"value": {
+					"name": "value",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"expires_at": {
+					"name": "expires_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_episodes": {
+			"name": "anime_episodes",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"anime_id": {
+					"name": "anime_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"episode_number": {
+					"name": "episode_number",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title_japanese": {
+					"name": "title_japanese",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"title_romaji": {
+					"name": "title_romaji",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"aired": {
+					"name": "aired",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"filler": {
+					"name": "filler",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"recap": {
+					"name": "recap",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"anime_episodes_anime_id_animes_id_fk": {
+					"name": "anime_episodes_anime_id_animes_id_fk",
+					"tableFrom": "anime_episodes",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_genres": {
+			"name": "anime_genres",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_producers": {
+			"name": "anime_producers",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"titles": {
+					"name": "titles",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"images": {
+					"name": "images",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"established": {
+					"name": "established",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"about": {
+					"name": "about",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.animes": {
+			"name": "animes",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"approved": {
+					"name": "approved",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"images": {
+					"name": "images",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"trailer": {
+					"name": "trailer",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"titles": {
+					"name": "titles",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title_english": {
+					"name": "title_english",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"title_japanese": {
+					"name": "title_japanese",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"title_synonyms": {
+					"name": "title_synonyms",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				},
+				"type": {
+					"name": "type",
+					"type": "varchar(16)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"source": {
+					"name": "source",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"number_episodes": {
+					"name": "number_episodes",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "varchar(32)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"airing": {
+					"name": "airing",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"aired_from": {
+					"name": "aired_from",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"aired_to": {
+					"name": "aired_to",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"duration": {
+					"name": "duration",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"rating": {
+					"name": "rating",
+					"type": "varchar(32)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"synopsis": {
+					"name": "synopsis",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"background": {
+					"name": "background",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"season": {
+					"name": "season",
+					"type": "varchar(8)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"year": {
+					"name": "year",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"broadcast_day": {
+					"name": "broadcast_day",
+					"type": "varchar(10)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"broadcast_time": {
+					"name": "broadcast_time",
+					"type": "varchar(5)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"broadcast_timezone": {
+					"name": "broadcast_timezone",
+					"type": "varchar(16)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"theme": {
+					"name": "theme",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				},
+				"external": {
+					"name": "external",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_to_character": {
+			"name": "anime_to_character",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"anime_id": {
+					"name": "anime_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"character_id": {
+					"name": "character_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "varchar(12)",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"anime_to_character_anime_id_animes_id_fk": {
+					"name": "anime_to_character_anime_id_animes_id_fk",
+					"tableFrom": "anime_to_character",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"anime_to_character_character_id_characters_id_fk": {
+					"name": "anime_to_character_character_id_characters_id_fk",
+					"tableFrom": "anime_to_character",
+					"tableTo": "characters",
+					"columnsFrom": ["character_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"anime_to_character_anime_id_character_id_role_unique": {
+					"name": "anime_to_character_anime_id_character_id_role_unique",
+					"nullsNotDistinct": false,
+					"columns": ["anime_id", "character_id", "role"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_to_genre": {
+			"name": "anime_to_genre",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"anime_id": {
+					"name": "anime_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"genre_id": {
+					"name": "genre_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "varchar(16)",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"anime_to_genre_anime_id_animes_id_fk": {
+					"name": "anime_to_genre_anime_id_animes_id_fk",
+					"tableFrom": "anime_to_genre",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"anime_to_genre_genre_id_anime_genres_id_fk": {
+					"name": "anime_to_genre_genre_id_anime_genres_id_fk",
+					"tableFrom": "anime_to_genre",
+					"tableTo": "anime_genres",
+					"columnsFrom": ["genre_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"anime_to_genre_anime_id_genre_id_role_unique": {
+					"name": "anime_to_genre_anime_id_genre_id_role_unique",
+					"nullsNotDistinct": false,
+					"columns": ["anime_id", "genre_id", "role"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_to_people": {
+			"name": "anime_to_people",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"anime_id": {
+					"name": "anime_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"people_id": {
+					"name": "people_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"positions": {
+					"name": "positions",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"anime_to_people_anime_id_animes_id_fk": {
+					"name": "anime_to_people_anime_id_animes_id_fk",
+					"tableFrom": "anime_to_people",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"anime_to_people_people_id_people_id_fk": {
+					"name": "anime_to_people_people_id_people_id_fk",
+					"tableFrom": "anime_to_people",
+					"tableTo": "people",
+					"columnsFrom": ["people_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"anime_to_people_anime_id_people_id_positions_unique": {
+					"name": "anime_to_people_anime_id_people_id_positions_unique",
+					"nullsNotDistinct": false,
+					"columns": ["anime_id", "people_id", "positions"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_to_producers": {
+			"name": "anime_to_producers",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"anime_id": {
+					"name": "anime_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"producer_id": {
+					"name": "producer_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "varchar(8)",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"anime_to_producers_anime_id_animes_id_fk": {
+					"name": "anime_to_producers_anime_id_animes_id_fk",
+					"tableFrom": "anime_to_producers",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"anime_to_producers_producer_id_anime_producers_id_fk": {
+					"name": "anime_to_producers_producer_id_anime_producers_id_fk",
+					"tableFrom": "anime_to_producers",
+					"tableTo": "anime_producers",
+					"columnsFrom": ["producer_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"anime_to_producers_anime_id_producer_id_role_unique": {
+					"name": "anime_to_producers_anime_id_producer_id_role_unique",
+					"nullsNotDistinct": false,
+					"columns": ["anime_id", "producer_id", "role"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.anime_manga_relation": {
+			"name": "anime_manga_relation",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"anime_source_id": {
+					"name": "anime_source_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"manga_source_id": {
+					"name": "manga_source_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"anime_destination_id": {
+					"name": "anime_destination_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"manga_destination_id": {
+					"name": "manga_destination_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"type": {
+					"name": "type",
+					"type": "varchar(32)",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"anime_manga_relation_anime_source_id_animes_id_fk": {
+					"name": "anime_manga_relation_anime_source_id_animes_id_fk",
+					"tableFrom": "anime_manga_relation",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_source_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"anime_manga_relation_manga_source_id_mangas_id_fk": {
+					"name": "anime_manga_relation_manga_source_id_mangas_id_fk",
+					"tableFrom": "anime_manga_relation",
+					"tableTo": "mangas",
+					"columnsFrom": ["manga_source_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"anime_manga_relation_anime_destination_id_animes_id_fk": {
+					"name": "anime_manga_relation_anime_destination_id_animes_id_fk",
+					"tableFrom": "anime_manga_relation",
+					"tableTo": "animes",
+					"columnsFrom": ["anime_destination_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"anime_manga_relation_manga_destination_id_mangas_id_fk": {
+					"name": "anime_manga_relation_manga_destination_id_mangas_id_fk",
+					"tableFrom": "anime_manga_relation",
+					"tableTo": "mangas",
+					"columnsFrom": ["manga_destination_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"anime_manga_relations_unique": {
+					"name": "anime_manga_relations_unique",
+					"nullsNotDistinct": false,
+					"columns": [
+						"anime_source_id",
+						"manga_source_id",
+						"anime_destination_id",
+						"manga_destination_id",
+						"type"
+					]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.characters": {
+			"name": "characters",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name_kanji": {
+					"name": "name_kanji",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"images": {
+					"name": "images",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"about": {
+					"name": "about",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"nicknames": {
+					"name": "nicknames",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.character_to_people": {
+			"name": "character_to_people",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"character_id": {
+					"name": "character_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"people_id": {
+					"name": "people_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"language": {
+					"name": "language",
+					"type": "varchar(24)",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"character_to_people_character_id_characters_id_fk": {
+					"name": "character_to_people_character_id_characters_id_fk",
+					"tableFrom": "character_to_people",
+					"tableTo": "characters",
+					"columnsFrom": ["character_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"character_to_people_people_id_people_id_fk": {
+					"name": "character_to_people_people_id_people_id_fk",
+					"tableFrom": "character_to_people",
+					"tableTo": "people",
+					"columnsFrom": ["people_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.manga_genres": {
+			"name": "manga_genres",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.magazines": {
+			"name": "magazines",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.mangas": {
+			"name": "mangas",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"approved": {
+					"name": "approved",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"images": {
+					"name": "images",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"titles": {
+					"name": "titles",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title_english": {
+					"name": "title_english",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"title_japanese": {
+					"name": "title_japanese",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"title_synonyms": {
+					"name": "title_synonyms",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				},
+				"type": {
+					"name": "type",
+					"type": "varchar(12)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"number_chapters": {
+					"name": "number_chapters",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"number_volumes": {
+					"name": "number_volumes",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "varchar(12)",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"publishing": {
+					"name": "publishing",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"publishing_from": {
+					"name": "publishing_from",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"publishing_to": {
+					"name": "publishing_to",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"synopsis": {
+					"name": "synopsis",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"background": {
+					"name": "background",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"external": {
+					"name": "external",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.manga_to_character": {
+			"name": "manga_to_character",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"manga_id": {
+					"name": "manga_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"character_id": {
+					"name": "character_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "varchar(12)",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"manga_to_character_manga_id_mangas_id_fk": {
+					"name": "manga_to_character_manga_id_mangas_id_fk",
+					"tableFrom": "manga_to_character",
+					"tableTo": "mangas",
+					"columnsFrom": ["manga_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"manga_to_character_character_id_characters_id_fk": {
+					"name": "manga_to_character_character_id_characters_id_fk",
+					"tableFrom": "manga_to_character",
+					"tableTo": "characters",
+					"columnsFrom": ["character_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"manga_to_character_manga_id_character_id_role_unique": {
+					"name": "manga_to_character_manga_id_character_id_role_unique",
+					"nullsNotDistinct": false,
+					"columns": ["manga_id", "character_id", "role"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.manga_to_genre": {
+			"name": "manga_to_genre",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"manga_id": {
+					"name": "manga_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"genre_id": {
+					"name": "genre_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "varchar(16)",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"manga_to_genre_manga_id_mangas_id_fk": {
+					"name": "manga_to_genre_manga_id_mangas_id_fk",
+					"tableFrom": "manga_to_genre",
+					"tableTo": "mangas",
+					"columnsFrom": ["manga_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"manga_to_genre_genre_id_manga_genres_id_fk": {
+					"name": "manga_to_genre_genre_id_manga_genres_id_fk",
+					"tableFrom": "manga_to_genre",
+					"tableTo": "manga_genres",
+					"columnsFrom": ["genre_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"manga_to_genre_manga_id_genre_id_role_unique": {
+					"name": "manga_to_genre_manga_id_genre_id_role_unique",
+					"nullsNotDistinct": false,
+					"columns": ["manga_id", "genre_id", "role"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.manga_to_magazine": {
+			"name": "manga_to_magazine",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"manga_id": {
+					"name": "manga_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"magazine_id": {
+					"name": "magazine_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"manga_to_magazine_manga_id_mangas_id_fk": {
+					"name": "manga_to_magazine_manga_id_mangas_id_fk",
+					"tableFrom": "manga_to_magazine",
+					"tableTo": "mangas",
+					"columnsFrom": ["manga_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				"manga_to_magazine_magazine_id_magazines_id_fk": {
+					"name": "manga_to_magazine_magazine_id_magazines_id_fk",
+					"tableFrom": "manga_to_magazine",
+					"tableTo": "magazines",
+					"columnsFrom": ["magazine_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"manga_to_magazine_manga_id_magazine_id_unique": {
+					"name": "manga_to_magazine_manga_id_magazine_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["manga_id", "magazine_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.manga_to_people": {
+			"name": "manga_to_people",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"manga_id": {
+					"name": "manga_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"people_id": {
+					"name": "people_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"manga_to_people_manga_id_mangas_id_fk": {
+					"name": "manga_to_people_manga_id_mangas_id_fk",
+					"tableFrom": "manga_to_people",
+					"tableTo": "mangas",
+					"columnsFrom": ["manga_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"manga_to_people_people_id_people_id_fk": {
+					"name": "manga_to_people_people_id_people_id_fk",
+					"tableFrom": "manga_to_people",
+					"tableTo": "people",
+					"columnsFrom": ["people_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"manga_to_people_manga_id_people_id_unique": {
+					"name": "manga_to_people_manga_id_people_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["manga_id", "people_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.people": {
+			"name": "people",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"given_name": {
+					"name": "given_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"family_name": {
+					"name": "family_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"alternate_names": {
+					"name": "alternate_names",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false,
+					"default": "'[]'::jsonb"
+				},
+				"birthday": {
+					"name": "birthday",
+					"type": "timestamp",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"about": {
+					"name": "about",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"images": {
+					"name": "images",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}
