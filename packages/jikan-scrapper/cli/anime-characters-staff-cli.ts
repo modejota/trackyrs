@@ -1,0 +1,150 @@
+import { Command } from "commander";
+import { handleError } from "@/fetcher-error";
+import { AnimeCharactersStaffFetcher } from "@/fetchers/anime-characters-staff-fetcher";
+
+const program = new Command();
+
+program
+	.name("anime-characters-staff-cli")
+	.description(
+		"CLI for fetching anime characters and staff data (relationships)",
+	)
+	.version("1.0.0");
+
+program
+	.command("insert-all")
+	.description(
+		"Insert all anime characters and staff data (relationships) from the Jikan API",
+	)
+	.action(async () => {
+		try {
+			const fetcher = new AnimeCharactersStaffFetcher();
+			console.log(
+				"Inserting all anime characters and staff data (relationships) from Jikan API...",
+			);
+			console.log("This may take a while as it processes all individual data.");
+
+			const processed = await fetcher.insertAll();
+			console.log(
+				`✅ Completed! Processed ${processed.inserted} entities | ${processed.skipped} skipped | ${processed.errors} errors`,
+			);
+		} catch (error) {
+			handleError(error);
+		}
+	});
+
+program
+	.command("insert-single")
+	.description("Insert characters and staff for a single anime")
+	.argument("<animeId>", "Anime ID to fetch characters and staff for")
+	.action(async (animeId: string) => {
+		const fetcher = new AnimeCharactersStaffFetcher();
+		try {
+			const result = await fetcher.insertSingle(Number.parseInt(animeId));
+			console.log(
+				`✅ Completed! Processed ${result.inserted} entities | ${result.skipped} skipped | ${result.errors} errors`,
+			);
+		} catch (error) {
+			console.error("Error:", error);
+			process.exit(1);
+		}
+	});
+
+program
+	.command("insert-range")
+	.description(
+		"Insert characters and staff for anime starting from a specific ID",
+	)
+	.option("-s, --start <startId>", "Starting anime ID")
+	.action(async (options) => {
+		const fetcher = new AnimeCharactersStaffFetcher();
+		try {
+			const startId = options.start
+				? Number.parseInt(options.start)
+				: undefined;
+			const result = await fetcher.insertRange(startId);
+			console.log(
+				`✅ Completed! Processed ${result.inserted} entities | ${result.skipped} skipped | ${result.errors} errors`,
+			);
+		} catch (error) {
+			console.error("Error:", error);
+			process.exit(1);
+		}
+	});
+
+program
+	.command("insert-between")
+	.description("Insert characters and staff for anime between two IDs")
+	.argument("<startId>", "Starting anime ID")
+	.argument("<endId>", "Ending anime ID")
+	.action(async (startId: string, endId: string) => {
+		const fetcher = new AnimeCharactersStaffFetcher();
+		try {
+			const result = await fetcher.insertBetween(
+				Number.parseInt(startId),
+				Number.parseInt(endId),
+			);
+			console.log(
+				`✅ Completed! Processed ${result.inserted} entities | ${result.skipped} skipped | ${result.errors} errors`,
+			);
+		} catch (error) {
+			console.error("Error:", error);
+			process.exit(1);
+		}
+	});
+
+program
+	.command("insert-list <ids...>")
+	.description(
+		"Insert characters and staff for a list of anime MAL IDs (space-separated)",
+	)
+	.action(async (ids: string[]) => {
+		const fetcher = new AnimeCharactersStaffFetcher();
+		try {
+			const malIds = ids
+				.map((id) => Number.parseInt(id, 10))
+				.filter((id) => !Number.isNaN(id) && id > 0);
+			if (malIds.length === 0) {
+				console.error(
+					"Error: At least one valid positive MAL ID must be provided",
+				);
+				process.exit(1);
+			}
+			const result = await fetcher.insertFromList(malIds);
+			console.log(
+				`✅ Completed! Processed ${result.inserted} entities | ${result.skipped} skipped | ${result.errors} errors`,
+			);
+		} catch (error) {
+			console.error("Error:", error);
+			process.exit(1);
+		}
+	});
+
+program
+	.command("update-list <ids...>")
+	.description(
+		"Update characters and staff for a list of anime MAL IDs (space-separated)",
+	)
+	.action(async (ids: string[]) => {
+		const fetcher = new AnimeCharactersStaffFetcher();
+		try {
+			const malIds = ids
+				.map((id) => Number.parseInt(id, 10))
+				.filter((id) => !Number.isNaN(id) && id > 0);
+			if (malIds.length === 0) {
+				console.error(
+					"Error: At least one valid positive MAL ID must be provided",
+				);
+				process.exit(1);
+			}
+			const result = await fetcher.updateFromList(malIds);
+			console.log(
+				`✅ Completed! Processed ${result.inserted} entities | ${result.skipped} skipped | ${result.errors} errors`,
+			);
+		} catch (error) {
+			console.error("Error:", error);
+			process.exit(1);
+		}
+	});
+
+program.parse();
