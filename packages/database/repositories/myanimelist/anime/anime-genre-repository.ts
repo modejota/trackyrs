@@ -1,0 +1,20 @@
+import { eq } from "drizzle-orm";
+import { animeGenreTable, database } from "@/index";
+import type { NewAnimeGenre } from "@/schemas/myanimelist/anime/anime-genre-schema";
+
+export default class AnimeGenreRepository {
+	static async findById(id: number) {
+		const result = await database
+			.select()
+			.from(animeGenreTable)
+			.where(eq(animeGenreTable.id, id))
+			.limit(1);
+		return result[0];
+	}
+	static async insert(genre: NewAnimeGenre) {
+		return await database
+			.insert(animeGenreTable)
+			.values(genre)
+			.onConflictDoNothing();
+	}
+}
