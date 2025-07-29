@@ -1,6 +1,7 @@
 import type React from "react";
 import "@trackyrs/ui/globals.css";
 
+import { Toaster } from "@trackyrs/ui/components/sonner";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
@@ -27,6 +28,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
 				{children}
+				<Toaster />
 			</body>
 		</html>
 	);
