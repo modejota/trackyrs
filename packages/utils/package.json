@@ -1,0 +1,8 @@
+{
+	"name": "@trackyrs/utils",
+	"version": "0.0.0",
+	"type": "module",
+	"devDependencies": {
+		"@trackyrs/typescript-config": "workspace:*"
+	}
+}
