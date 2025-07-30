@@ -3,4 +3,5 @@ export interface DatabaseOperationResult {
 	updated: number;
 	skipped: number;
 	errors: number;
+	ids: number[];
 }
