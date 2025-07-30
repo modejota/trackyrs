@@ -1,4 +1,7 @@
 import type { NewAnime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
+import type { AnimeGenreRole } from "@trackyrs/database/schemas/myanimelist/anime/anime-to-genre-schema";
+import type { AnimeProducerRole } from "@trackyrs/database/schemas/myanimelist/anime/anime-to-producers-schema";
+import type { NewCharacterToPeople } from "@trackyrs/database/schemas/myanimelist/character/character-to-people-schema";
 import type {
 	AnimeCharacterData,
 	AnimeData,
@@ -37,65 +40,40 @@ export class AnimeMapper {
 			broadcastTimezone: data.broadcast.timezone,
 			theme: data.theme ? [data.theme] : [],
 			external: data.external || [],
+			streaming: data.streaming || [],
 		};
 	}
 
-	static mapProducerRelations(
-		animeId: number,
-		data: AnimeData,
-		producerMap: Map<number, number>,
-	) {
-		const relations: Array<{
-			animeId: number;
-			producerId: number;
-			role: string;
-		}> = [];
-
-		const producerTypes = [
-			{ list: data.producers, role: "Producer" },
-			{ list: data.licensors, role: "Licensor" },
-			{ list: data.studios, role: "Studio" },
-		];
-
-		for (const { list, role } of producerTypes) {
-			if (!list?.length) continue;
-			for (const producer of list) {
-				const producerId = producerMap.get(producer.mal_id);
-				if (producerId) {
-					relations.push({ animeId, producerId, role });
-				}
-			}
-		}
-
-		return relations;
+	static mapAnimeThemeExternalStreamingDetails(data: AnimeData) {
+		return {
+			theme: data.theme ? [data.theme] : [],
+			external: data.external || [],
+			streaming: data.streaming || [],
+		};
 	}
 
-	static mapGenreRelations(
+	static mapProducerRelation(
 		animeId: number,
-		data: AnimeData,
-		genreMap: Map<number, number>,
+		producerId: number,
+		role: AnimeProducerRole,
 	) {
-		const relations: Array<{ animeId: number; genreId: number; role: string }> =
-			[];
+		return {
+			animeId: animeId,
+			producerId: producerId,
+			role: role,
+		};
+	}
 
-		const genreTypes = [
-			{ list: data.genres, role: "Genres" },
-			{ list: data.explicit_genres, role: "Explicit Genres" },
-			{ list: data.themes, role: "Themes" },
-			{ list: data.demographics, role: "Demographics" },
-		];
-
-		for (const { list, role } of genreTypes) {
-			if (!list?.length) continue;
-			for (const genre of list) {
-				const genreId = genreMap.get(genre.mal_id);
-				if (genreId) {
-					relations.push({ animeId, genreId, role });
-				}
-			}
-		}
-
-		return relations;
+	static mapGenreRelation(
+		animeId: number,
+		genreId: number,
+		role: AnimeGenreRole,
+	) {
+		return {
+			animeId: animeId,
+			genreId: genreId,
+			role: role,
+		};
 	}
 
 	static mapEpisodeData(animeId: number, data: EpisodeData) {
@@ -123,11 +101,7 @@ export class AnimeMapper {
 		characterId: number,
 		data: AnimeCharacterData,
 	) {
-		const relations: Array<{
-			characterId: number;
-			peopleId: number;
-			language: string;
-		}> = [];
+		const relations: NewCharacterToPeople[] = [];
 
 		if (data.voice_actors?.length) {
 			for (const voiceActor of data.voice_actors) {

@@ -5,6 +5,7 @@ import { ImageProcessor } from "@/utils/image-processor";
 export class CharacterMapper {
 	static mapCharacterData(data: CharacterData): NewCharacter {
 		return {
+			id: data.mal_id,
 			name: data.name,
 			nameKanji: data.name_kanji,
 			images: ImageProcessor.extractOptimalImageUrl(data.images),
