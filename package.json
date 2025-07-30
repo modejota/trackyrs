@@ -20,8 +20,5 @@
 	"workspaces": [
 		"apps/*",
 		"packages/*"
-	],
-	"dependencies": {
-		"class-variance-authority": "^0.7.1"
-	}
+	]
 }

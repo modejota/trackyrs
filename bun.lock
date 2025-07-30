@@ -3,9 +3,6 @@
   "workspaces": {
     "": {
       "name": "trackyrs",
-      "dependencies": {
-        "class-variance-authority": "^0.7.1",
-      },
       "devDependencies": {
         "@biomejs/biome": "2.0.6",
         "lefthook": "^1.11.16",
@@ -63,7 +60,6 @@
         "@trackyrs/database": "workspace:*",
         "cli-progress": "^3.12.0",
         "commander": "^14.0.0",
-        "drizzle-orm": "^0.44.3",
       },
       "devDependencies": {
         "@trackyrs/typescript-config": "workspace:*",
