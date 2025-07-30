@@ -1,7 +1,7 @@
-import { jsonb, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
 
 export const characterTable = pgTable("characters", {
-	id: serial("id").primaryKey(),
+	id: integer("id").primaryKey(),
 	name: text("name").notNull(),
 	nameKanji: text("name_kanji"),
 	images: text("images").notNull(),

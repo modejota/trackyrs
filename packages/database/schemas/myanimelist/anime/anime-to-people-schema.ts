@@ -14,13 +14,7 @@ export const animeToPeopleTable = pgTable(
 			.references(() => peopleTable.id, { onDelete: "cascade" }),
 		positions: jsonb("positions").notNull().$type<string[]>(),
 	},
-	(table) => ({
-		uniqueAnimePeoplePositions: unique().on(
-			table.animeId,
-			table.peopleId,
-			table.positions,
-		),
-	}),
+	(table) => [unique().on(table.animeId, table.peopleId, table.positions)],
 );
 
 export type AnimeToPeople = typeof animeToPeopleTable.$inferSelect;

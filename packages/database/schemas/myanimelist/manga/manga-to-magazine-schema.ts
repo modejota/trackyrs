@@ -13,9 +13,7 @@ export const mangaToMagazineTable = pgTable(
 			.notNull()
 			.references(() => mangaMagazineTable.id, { onDelete: "cascade" }),
 	},
-	(table) => ({
-		uniqueMangaMagazine: unique().on(table.mangaId, table.magazineId),
-	}),
+	(table) => [unique().on(table.mangaId, table.magazineId)],
 );
 
 export type MangaToMagazine = typeof mangaToMagazineTable.$inferSelect;

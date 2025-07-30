@@ -21,13 +21,7 @@ export const animeToProducersTable = pgTable(
 			.references(() => animeProducersTable.id, { onDelete: "cascade" }),
 		role: varchar("role", { length: 8 }).$type<AnimeProducerRole>().notNull(),
 	},
-	(table) => ({
-		uniqueAnimeProducerRole: unique().on(
-			table.animeId,
-			table.producerId,
-			table.role,
-		),
-	}),
+	(table) => [unique().on(table.animeId, table.producerId, table.role)],
 );
 
 export const animeToProducersRelations = relations(

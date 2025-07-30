@@ -16,15 +16,15 @@ export const animeMangaRelationTable = pgTable(
 		),
 		type: varchar("type", { length: 32 }),
 	},
-	(table) => ({
-		uniqueAnimeMangaRelation: unique("anime_manga_relations_unique").on(
+	(table) => [
+		unique("anime_manga_relations_unique").on(
 			table.animeSourceId,
 			table.mangaSourceId,
 			table.animeDestinationId,
 			table.mangaDestinationId,
 			table.type,
 		),
-	}),
+	],
 );
 
 export type AnimeMangaRelation = typeof animeMangaRelationTable.$inferSelect;

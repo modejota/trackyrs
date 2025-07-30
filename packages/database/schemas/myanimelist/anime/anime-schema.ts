@@ -4,7 +4,6 @@ import {
 	integer,
 	jsonb,
 	pgTable,
-	serial,
 	text,
 	timestamp,
 	varchar,
@@ -83,8 +82,13 @@ export interface AnimeExternalLink {
 	url: string;
 }
 
+export interface AnimeStreamingInfo {
+	name: string;
+	url: string;
+}
+
 export const animeTable = pgTable("animes", {
-	id: serial("id").primaryKey(),
+	id: integer("id").primaryKey(),
 	approved: boolean("approved").notNull().default(false),
 	images: text("images").notNull(),
 	trailer: text("trailer"),
@@ -118,6 +122,9 @@ export const animeTable = pgTable("animes", {
 		.default(sql`'[]'::jsonb`),
 	external: jsonb("external")
 		.$type<Array<AnimeExternalLink>>()
+		.default(sql`'[]'::jsonb`),
+	streaming: jsonb("streaming")
+		.$type<Array<AnimeStreamingInfo>>()
 		.default(sql`'[]'::jsonb`),
 });
 

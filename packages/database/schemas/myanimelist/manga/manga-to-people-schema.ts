@@ -13,9 +13,7 @@ export const mangaToPeopleTable = pgTable(
 			.notNull()
 			.references(() => peopleTable.id),
 	},
-	(table) => ({
-		uniqueMangaPeople: unique().on(table.mangaId, table.peopleId),
-	}),
+	(table) => [unique().on(table.mangaId, table.peopleId)],
 );
 
 export type MangaToPeople = typeof mangaToPeopleTable.$inferSelect;

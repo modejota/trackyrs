@@ -1,7 +1,8 @@
+import { join } from "node:path";
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
-config({ path: ["../../.env.local"], override: true });
+config({ path: join(__dirname, ".env.local"), override: true, quiet: true });
 
 export default defineConfig({
 	dialect: "postgresql",

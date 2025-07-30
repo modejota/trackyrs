@@ -4,7 +4,6 @@ import {
 	integer,
 	jsonb,
 	pgTable,
-	serial,
 	text,
 	timestamp,
 	varchar,
@@ -34,7 +33,7 @@ export interface TitleInfo {
 }
 
 export const mangaTable = pgTable("mangas", {
-	id: serial("id").primaryKey(),
+	id: integer("id").primaryKey(),
 	approved: boolean("approved").notNull().default(false),
 	images: text("images").notNull(),
 	title: text("title").notNull(),

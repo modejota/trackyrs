@@ -22,6 +22,13 @@
 			"when": 1753258050454,
 			"tag": "0002_colorful_doctor_faustus",
 			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1753889307443,
+			"tag": "0003_sloppy_giant_girl",
+			"breakpoints": true
 		}
 	]
 }

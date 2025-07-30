@@ -17,13 +17,7 @@ export const animeToCharacterTable = pgTable(
 			.references(() => characterTable.id, { onDelete: "cascade" }),
 		role: varchar("role", { length: 12 }).notNull().$type<AnimeCharacterRole>(),
 	},
-	(table) => ({
-		uniqueAnimeCharacterRole: unique().on(
-			table.animeId,
-			table.characterId,
-			table.role,
-		),
-	}),
+	(table) => [unique().on(table.animeId, table.characterId, table.role)],
 );
 
 export const animeToCharacterRelations = relations(

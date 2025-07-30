@@ -1,4 +1,4 @@
-import { jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export interface ProducerTitlesInfo {
 	type: string;
@@ -6,7 +6,7 @@ export interface ProducerTitlesInfo {
 }
 
 export const animeProducersTable = pgTable("anime_producers", {
-	id: serial("id").primaryKey(),
+	id: integer("id").primaryKey(),
 	name: text("name").notNull(),
 	titles: jsonb("titles").notNull().$type<Array<ProducerTitlesInfo>>(),
 	images: text("images").notNull(),

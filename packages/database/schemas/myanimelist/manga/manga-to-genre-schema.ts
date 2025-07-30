@@ -21,9 +21,7 @@ export const mangaToGenreTable = pgTable(
 			.references(() => mangaGenreTable.id, { onDelete: "cascade" }),
 		role: varchar("role", { length: 16 }).notNull(),
 	},
-	(table) => ({
-		uniqueMangaGenreRole: unique().on(table.mangaId, table.genreId, table.role),
-	}),
+	(table) => [unique().on(table.mangaId, table.genreId, table.role)],
 );
 
 export type MangaToGenre = typeof mangaToGenreTable.$inferSelect;

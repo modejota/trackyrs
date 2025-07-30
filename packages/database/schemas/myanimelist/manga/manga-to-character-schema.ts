@@ -16,13 +16,7 @@ export const mangaToCharacterTable = pgTable(
 			.references(() => characterTable.id, { onDelete: "cascade" }),
 		role: varchar("role", { length: 12 }).notNull().$type<MangaCharacterRole>(),
 	},
-	(table) => ({
-		uniqueMangaCharacterRole: unique().on(
-			table.mangaId,
-			table.characterId,
-			table.role,
-		),
-	}),
+	(table) => [unique().on(table.mangaId, table.characterId, table.role)],
 );
 
 export type MangaToCharacter = typeof mangaToCharacterTable.$inferSelect;

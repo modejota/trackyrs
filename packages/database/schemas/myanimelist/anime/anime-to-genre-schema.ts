@@ -22,9 +22,7 @@ export const animeToGenreTable = pgTable(
 			.references(() => animeGenreTable.id, { onDelete: "cascade" }),
 		role: varchar("role", { length: 16 }).notNull().$type<AnimeGenreRole>(),
 	},
-	(table) => ({
-		uniqueAnimeGenreRole: unique().on(table.animeId, table.genreId, table.role),
-	}),
+	(table) => [unique().on(table.animeId, table.genreId, table.role)],
 );
 
 export const animeToGenreRelations = relations(
