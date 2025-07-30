@@ -1,6 +1,9 @@
 import { eq } from "drizzle-orm";
 import { animeGenreTable, database } from "@/index";
-import type { NewAnimeGenre } from "@/schemas/myanimelist/anime/anime-genre-schema";
+import type {
+	AnimeGenre,
+	NewAnimeGenre,
+} from "@/schemas/myanimelist/anime/anime-genre-schema";
 
 export default class AnimeGenreRepository {
 	static async findById(id: number) {
@@ -15,6 +18,18 @@ export default class AnimeGenreRepository {
 		return await database
 			.insert(animeGenreTable)
 			.values(genre)
-			.onConflictDoNothing();
+			.onConflictDoNothing({ target: animeGenreTable.id });
+	}
+
+	static async upsert(genre: NewAnimeGenre): Promise<AnimeGenre> {
+		const result = await database
+			.insert(animeGenreTable)
+			.values(genre)
+			.onConflictDoUpdate({
+				target: animeGenreTable.id,
+				set: genre,
+			})
+			.returning();
+		return result[0] as AnimeGenre;
 	}
 }

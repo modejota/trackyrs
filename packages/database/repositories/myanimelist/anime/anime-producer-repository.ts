@@ -1,6 +1,9 @@
 import { eq } from "drizzle-orm";
 import { animeProducersTable, database } from "@/index";
-import type { NewProducer } from "@/schemas/myanimelist/anime/anime-producer-schema";
+import type {
+	NewProducer,
+	Producer,
+} from "@/schemas/myanimelist/anime/anime-producer-schema";
 
 export default class AnimeProducerRepository {
 	static async findById(id: number) {
@@ -16,7 +19,7 @@ export default class AnimeProducerRepository {
 		return await database
 			.insert(animeProducersTable)
 			.values(producer)
-			.onConflictDoNothing();
+			.onConflictDoNothing({ target: animeProducersTable.id });
 	}
 
 	static async update(id: number, producer: NewProducer) {
@@ -24,5 +27,17 @@ export default class AnimeProducerRepository {
 			.update(animeProducersTable)
 			.set(producer)
 			.where(eq(animeProducersTable.id, id));
+	}
+
+	static async upsert(producer: NewProducer): Promise<Producer> {
+		const result = await database
+			.insert(animeProducersTable)
+			.values(producer)
+			.onConflictDoUpdate({
+				target: animeProducersTable.id,
+				set: producer,
+			})
+			.returning();
+		return result[0] as Producer;
 	}
 }

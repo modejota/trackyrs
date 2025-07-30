@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { database, peopleTable } from "@/index";
-import type { NewPeople } from "@/schemas/myanimelist/people-schema";
+import type { NewPeople, People } from "@/schemas/myanimelist/people-schema";
 
 export default class PeopleRepository {
 	static async findById(id: number) {
@@ -17,7 +17,7 @@ export default class PeopleRepository {
 		return await database
 			.insert(peopleTable)
 			.values(people)
-			.onConflictDoNothing();
+			.onConflictDoNothing({ target: peopleTable.id });
 	}
 
 	static async update(id: number, people: NewPeople) {
@@ -27,12 +27,15 @@ export default class PeopleRepository {
 			.where(eq(peopleTable.id, id));
 	}
 
-	static async findAllIds(): Promise<number[]> {
+	static async upsert(people: NewPeople): Promise<People> {
 		const result = await database
-			.select({ id: peopleTable.id })
-			.from(peopleTable)
-			.orderBy(peopleTable.id);
-
-		return result.map((row) => row.id);
+			.insert(peopleTable)
+			.values(people)
+			.onConflictDoUpdate({
+				target: peopleTable.id,
+				set: people,
+			})
+			.returning();
+		return result[0] as People;
 	}
 }

@@ -1,7 +1,10 @@
 import { eq } from "drizzle-orm";
 
 import { characterTable, database } from "@/index";
-import type { NewCharacter } from "@/schemas/myanimelist/character/character-schema";
+import type {
+	Character,
+	NewCharacter,
+} from "@/schemas/myanimelist/character/character-schema";
 
 export default class CharacterRepository {
 	static async findById(id: number) {
@@ -17,7 +20,7 @@ export default class CharacterRepository {
 		return await database
 			.insert(characterTable)
 			.values(character)
-			.onConflictDoNothing();
+			.onConflictDoNothing({ target: characterTable.id });
 	}
 
 	static async update(id: number, character: NewCharacter) {
@@ -27,12 +30,15 @@ export default class CharacterRepository {
 			.where(eq(characterTable.id, id));
 	}
 
-	static async findAllIds(): Promise<number[]> {
+	static async upsert(character: NewCharacter): Promise<Character> {
 		const result = await database
-			.select({ id: characterTable.id })
-			.from(characterTable)
-			.orderBy(characterTable.id);
-
-		return result.map((row) => row.id);
+			.insert(characterTable)
+			.values(character)
+			.onConflictDoUpdate({
+				target: characterTable.id,
+				set: character,
+			})
+			.returning();
+		return result[0] as Character;
 	}
 }

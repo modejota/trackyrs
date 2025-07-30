@@ -1,7 +1,7 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 
 import { animeTable, database } from "@/index";
-import type { NewAnime } from "@/schemas/myanimelist/anime/anime-schema";
+import type { Anime, NewAnime } from "@/schemas/myanimelist/anime/anime-schema";
 
 export default class AnimeRepository {
 	static async findById(id: number) {
@@ -17,7 +17,7 @@ export default class AnimeRepository {
 		return await database
 			.insert(animeTable)
 			.values(anime)
-			.onConflictDoNothing();
+			.onConflictDoNothing({ target: animeTable.id });
 	}
 
 	static async update(id: number, anime: NewAnime) {
@@ -25,6 +25,18 @@ export default class AnimeRepository {
 			.update(animeTable)
 			.set(anime)
 			.where(eq(animeTable.id, id));
+	}
+
+	static async upsert(anime: NewAnime): Promise<Anime> {
+		const result = await database
+			.insert(animeTable)
+			.values(anime)
+			.onConflictDoUpdate({
+				target: animeTable.id,
+				set: anime,
+			})
+			.returning();
+		return result[0] as Anime;
 	}
 
 	static async findIdsFromRange(startId?: number): Promise<number[]> {
@@ -35,28 +47,6 @@ export default class AnimeRepository {
 		}
 
 		const result = await query.orderBy(animeTable.id);
-		return result.map((row) => row.id);
-	}
-
-	static async findIdsBetween(
-		startId: number,
-		endId: number,
-	): Promise<number[]> {
-		const result = await database
-			.select({ id: animeTable.id })
-			.from(animeTable)
-			.where(and(gte(animeTable.id, startId), lte(animeTable.id, endId)))
-			.orderBy(animeTable.id);
-
-		return result.map((row) => row.id);
-	}
-
-	static async findAllIds(): Promise<number[]> {
-		const result = await database
-			.select({ id: animeTable.id })
-			.from(animeTable)
-			.orderBy(animeTable.id);
-
 		return result.map((row) => row.id);
 	}
 

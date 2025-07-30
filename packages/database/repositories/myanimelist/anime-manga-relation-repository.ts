@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { database } from "@/index";
 import {
 	type AnimeMangaRelation,
@@ -41,6 +41,54 @@ export default class AnimeMangaRelationRepository {
 			.insert(animeMangaRelationTable)
 			.values(data)
 			.returning();
+	}
+
+	static async upsert(
+		data: NewAnimeMangaRelation,
+	): Promise<AnimeMangaRelation> {
+		const result = await database
+			.insert(animeMangaRelationTable)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					animeMangaRelationTable.animeSourceId,
+					animeMangaRelationTable.mangaSourceId,
+					animeMangaRelationTable.animeDestinationId,
+					animeMangaRelationTable.mangaDestinationId,
+					animeMangaRelationTable.type,
+				],
+				set: data,
+			})
+			.returning();
+		return result[0] as AnimeMangaRelation;
+	}
+
+	static async upsertMany(
+		data: NewAnimeMangaRelation[],
+	): Promise<AnimeMangaRelation[]> {
+		if (data.length === 0) return [];
+
+		const result = await database
+			.insert(animeMangaRelationTable)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					animeMangaRelationTable.animeSourceId,
+					animeMangaRelationTable.mangaSourceId,
+					animeMangaRelationTable.animeDestinationId,
+					animeMangaRelationTable.mangaDestinationId,
+					animeMangaRelationTable.type,
+				],
+				set: {
+					animeSourceId: sql`excluded.anime_source_id`,
+					mangaSourceId: sql`excluded.manga_source_id`,
+					animeDestinationId: sql`excluded.anime_destination_id`,
+					mangaDestinationId: sql`excluded.manga_destination_id`,
+					type: sql`excluded.type`,
+				},
+			})
+			.returning();
+		return result as AnimeMangaRelation[];
 	}
 
 	private static async findExisting(

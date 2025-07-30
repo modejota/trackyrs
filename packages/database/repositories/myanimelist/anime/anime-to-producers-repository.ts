@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { database } from "@/index";
 import {
 	type AnimeProducerRole,
@@ -8,12 +8,6 @@ import {
 } from "@/schemas/myanimelist/anime/anime-to-producers-schema";
 
 export default class AnimeToProducersRepository {
-	static async findByAnimeId(animeId: number): Promise<AnimeToProducers[]> {
-		return await database
-			.select()
-			.from(animeToProducersTable)
-			.where(eq(animeToProducersTable.animeId, animeId));
-	}
 	static async insert(data: NewAnimeToProducers) {
 		return await database
 			.insert(animeToProducersTable)
@@ -33,41 +27,44 @@ export default class AnimeToProducersRepository {
 			.onConflictDoNothing()
 			.returning();
 	}
-	static async deleteByAnimeId(animeId: number): Promise<void> {
-		await database
-			.delete(animeToProducersTable)
-			.where(eq(animeToProducersTable.animeId, animeId));
-	}
 
-	static async deleteByAnimeIdAndRole(
-		animeId: number,
-		role: AnimeProducerRole,
-	): Promise<void> {
-		await database
-			.delete(animeToProducersTable)
-			.where(
-				and(
-					eq(animeToProducersTable.animeId, animeId),
-					eq(animeToProducersTable.role, role),
-				),
-			);
-	}
-
-	private static async findExisting(
-		data: NewAnimeToProducers,
-	): Promise<AnimeToProducers | null> {
+	static async upsert(data: NewAnimeToProducers): Promise<AnimeToProducers> {
 		const result = await database
-			.select()
-			.from(animeToProducersTable)
-			.where(
-				and(
-					eq(animeToProducersTable.animeId, data.animeId),
-					eq(animeToProducersTable.producerId, data.producerId),
-					eq(animeToProducersTable.role, data.role),
-				),
-			)
-			.limit(1);
+			.insert(animeToProducersTable)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					animeToProducersTable.animeId,
+					animeToProducersTable.producerId,
+					animeToProducersTable.role,
+				],
+				set: data,
+			})
+			.returning();
+		return result[0] as AnimeToProducers;
+	}
 
-		return result[0] || null;
+	static async upsertMany(
+		data: NewAnimeToProducers[],
+	): Promise<AnimeToProducers[]> {
+		if (data.length === 0) return [];
+
+		const result = await database
+			.insert(animeToProducersTable)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					animeToProducersTable.animeId,
+					animeToProducersTable.producerId,
+					animeToProducersTable.role,
+				],
+				set: {
+					animeId: sql`excluded.anime_id`,
+					producerId: sql`excluded.producer_id`,
+					role: sql`excluded.role`,
+				},
+			})
+			.returning();
+		return result as AnimeToProducers[];
 	}
 }

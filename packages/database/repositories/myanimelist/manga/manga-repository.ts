@@ -1,6 +1,6 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 import { database, mangaTable } from "@/index";
-import type { NewManga } from "@/schemas";
+import type { Manga, NewManga } from "@/schemas";
 
 export default class MangaRepository {
 	static async findById(id: number) {
@@ -16,7 +16,7 @@ export default class MangaRepository {
 		return await database
 			.insert(mangaTable)
 			.values(manga)
-			.onConflictDoNothing();
+			.onConflictDoNothing({ target: mangaTable.id });
 	}
 
 	static async update(id: number, manga: NewManga) {
@@ -25,26 +25,17 @@ export default class MangaRepository {
 			.set(manga)
 			.where(eq(mangaTable.id, id));
 	}
-	static async findIdsBetween(
-		startId: number,
-		endId: number,
-	): Promise<number[]> {
+
+	static async upsert(manga: NewManga): Promise<Manga> {
 		const result = await database
-			.select({ id: mangaTable.id })
-			.from(mangaTable)
-			.where(and(gte(mangaTable.id, startId), lte(mangaTable.id, endId)))
-			.orderBy(mangaTable.id);
-
-		return result.map((row) => row.id);
-	}
-
-	static async findAllIds(): Promise<number[]> {
-		const result = await database
-			.select({ id: mangaTable.id })
-			.from(mangaTable)
-			.orderBy(mangaTable.id);
-
-		return result.map((row) => row.id);
+			.insert(mangaTable)
+			.values(manga)
+			.onConflictDoUpdate({
+				target: mangaTable.id,
+				set: manga,
+			})
+			.returning();
+		return result[0] as Manga;
 	}
 
 	static async findIdsFromRangeGreaterThanOrEqual(

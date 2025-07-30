@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { database } from "@/index";
 import {
 	type AnimeToGenre,
@@ -7,12 +7,6 @@ import {
 } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
 
 export default class AnimeToGenreRepository {
-	static async findByAnimeId(animeId: number): Promise<AnimeToGenre[]> {
-		return await database
-			.select()
-			.from(animeToGenreTable)
-			.where(eq(animeToGenreTable.animeId, animeId));
-	}
 	static async insert(data: NewAnimeToGenre) {
 		return await database
 			.insert(animeToGenreTable)
@@ -30,27 +24,42 @@ export default class AnimeToGenreRepository {
 			.onConflictDoNothing()
 			.returning();
 	}
-	static async deleteByAnimeId(animeId: number): Promise<void> {
-		await database
-			.delete(animeToGenreTable)
-			.where(eq(animeToGenreTable.animeId, animeId));
+
+	static async upsert(data: NewAnimeToGenre): Promise<AnimeToGenre> {
+		const result = await database
+			.insert(animeToGenreTable)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					animeToGenreTable.animeId,
+					animeToGenreTable.genreId,
+					animeToGenreTable.role,
+				],
+				set: data,
+			})
+			.returning();
+		return result[0] as AnimeToGenre;
 	}
 
-	private static async findExisting(
-		data: NewAnimeToGenre,
-	): Promise<AnimeToGenre | null> {
-		const result = await database
-			.select()
-			.from(animeToGenreTable)
-			.where(
-				and(
-					eq(animeToGenreTable.animeId, data.animeId),
-					eq(animeToGenreTable.genreId, data.genreId),
-					eq(animeToGenreTable.role, data.role),
-				),
-			)
-			.limit(1);
+	static async upsertMany(data: NewAnimeToGenre[]): Promise<AnimeToGenre[]> {
+		if (data.length === 0) return [];
 
-		return result[0] || null;
+		const result = await database
+			.insert(animeToGenreTable)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [
+					animeToGenreTable.animeId,
+					animeToGenreTable.genreId,
+					animeToGenreTable.role,
+				],
+				set: {
+					animeId: sql`excluded.anime_id`,
+					genreId: sql`excluded.genre_id`,
+					role: sql`excluded.role`,
+				},
+			})
+			.returning();
+		return result as AnimeToGenre[];
 	}
 }

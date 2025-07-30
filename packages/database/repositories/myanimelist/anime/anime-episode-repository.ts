@@ -1,7 +1,10 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { animeEpisodeTable, database } from "@/index";
-import type { NewAnimeEpisode } from "@/schemas/myanimelist/anime/anime-episode-schema";
+import type {
+	AnimeEpisode,
+	NewAnimeEpisode,
+} from "@/schemas/myanimelist/anime/anime-episode-schema";
 
 export default class AnimeEpisodeRepository {
 	static async findByAnimeIdAndEpisodeNumber(
@@ -57,6 +60,42 @@ export default class AnimeEpisodeRepository {
 					eq(animeEpisodeTable.episodeNumber, episodeNumber),
 				),
 			);
+	}
+
+	static async upsert(episode: NewAnimeEpisode): Promise<AnimeEpisode> {
+		const result = await database
+			.insert(animeEpisodeTable)
+			.values(episode)
+			.onConflictDoUpdate({
+				target: [animeEpisodeTable.animeId, animeEpisodeTable.episodeNumber],
+				set: episode,
+			})
+			.returning();
+		return result[0] as AnimeEpisode;
+	}
+
+	static async upsertMany(
+		episodes: NewAnimeEpisode[],
+	): Promise<AnimeEpisode[]> {
+		if (episodes.length === 0) return [];
+		const result = await database
+			.insert(animeEpisodeTable)
+			.values(episodes)
+			.onConflictDoUpdate({
+				target: [animeEpisodeTable.animeId, animeEpisodeTable.episodeNumber],
+				set: {
+					animeId: sql`excluded.anime_id`,
+					episodeNumber: sql`excluded.episode_number`,
+					title: sql`excluded.title`,
+					titleJapanese: sql`excluded.title_japanese`,
+					titleRomaji: sql`excluded.title_romaji`,
+					aired: sql`excluded.aired`,
+					filler: sql`excluded.filler`,
+					recap: sql`excluded.recap`,
+				},
+			})
+			.returning();
+		return result as AnimeEpisode[];
 	}
 
 	static async exists(
