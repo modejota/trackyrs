@@ -1,5 +1,4 @@
 import { Command } from "commander";
-import { handleError } from "@/fetcher-error";
 import { GenresFetcher } from "@/fetchers/genres-fetcher";
 
 const program = new Command();
@@ -10,65 +9,60 @@ program
 	.version("1.0.0");
 
 program
-	.command("insert-anime")
-	.description("Insert all anime genres from the Jikan API")
+	.command("upsert-anime")
+	.description(
+		"Upsert all anime genres from the Jikan API (insert new or update existing)",
+	)
 	.action(async () => {
-		try {
-			const fetcher = new GenresFetcher();
+		const fetcher = new GenresFetcher();
 
-			console.log("🎬 Inserting all anime genres...");
-			const processed = await fetcher.insertAll("anime");
-			console.log(
-				`✅ Completed! Processed ${processed.inserted} anime genres | ${processed.skipped} skipped | ${processed.errors} errors`,
-			);
-		} catch (error) {
-			handleError(error);
-		}
+		console.log("🎬 Upserting all anime genres...");
+		const processed = await fetcher.upsertAll("anime");
+		console.log(
+			`✅ Completed! Processed ${processed.inserted} inserted | ${processed.updated} updated | ${processed.skipped} skipped | ${processed.errors} errors`,
+		);
 	});
 
 program
-	.command("insert-manga")
-	.description("Insert all manga genres from the Jikan API")
+	.command("upsert-manga")
+	.description(
+		"Upsert all manga genres from the Jikan API (insert new or update existing)",
+	)
 	.action(async () => {
-		try {
-			const fetcher = new GenresFetcher();
+		const fetcher = new GenresFetcher();
 
-			console.log("📚 Inserting all manga genres...");
-			const processed = await fetcher.insertAll("manga");
-			console.log(
-				`✅ Completed! Processed ${processed.inserted} manga genres | ${processed.skipped} skipped | ${processed.errors} errors`,
-			);
-		} catch (error) {
-			handleError(error);
-		}
+		console.log("📚 Upserting all manga genres...");
+		const processed = await fetcher.upsertAll("manga");
+		console.log(
+			`✅ Completed! Processed ${processed.inserted} inserted | ${processed.updated} updated | ${processed.skipped} skipped | ${processed.errors} errors`,
+		);
 	});
 
 program
-	.command("insert-all")
-	.description("Insert all genres for both anime and manga")
+	.command("upsert-all")
+	.description(
+		"Upsert all genres for both anime and manga (insert new or update existing)",
+	)
 	.action(async () => {
-		try {
-			const fetcher = new GenresFetcher();
+		const fetcher = new GenresFetcher();
 
-			console.log("🎬 Inserting all anime genres...");
-			const animeProcessed = await fetcher.insertAll("anime");
-			console.log(
-				`✅ Anime genres completed! Processed ${animeProcessed.inserted} genres | ${animeProcessed.skipped} skipped | ${animeProcessed.errors} errors`,
-			);
+		console.log("🎬 Upserting all anime genres...");
+		const animeProcessed = await fetcher.upsertAll("anime");
+		console.log(
+			`✅ Anime genres completed! Processed ${animeProcessed.inserted} inserted | ${animeProcessed.updated} updated | ${animeProcessed.skipped} skipped | ${animeProcessed.errors} errors`,
+		);
 
-			console.log("📚 Inserting all manga genres...");
-			const mangaProcessed = await fetcher.insertAll("manga");
-			console.log(
-				`✅ Manga genres completed! Processed ${mangaProcessed.inserted} genres | ${mangaProcessed.skipped} skipped | ${mangaProcessed.errors} errors`,
-			);
+		console.log("📚 Upserting all manga genres...");
+		const mangaProcessed = await fetcher.upsertAll("manga");
+		console.log(
+			`✅ Manga genres completed! Processed ${mangaProcessed.inserted} inserted | ${mangaProcessed.updated} updated | ${mangaProcessed.skipped} skipped | ${mangaProcessed.errors} errors`,
+		);
 
-			const totalProcessed = animeProcessed.inserted + mangaProcessed.inserted;
-			console.log(
-				`🎉 All genres completed! Total processed: ${totalProcessed} genres | ${animeProcessed.skipped + mangaProcessed.skipped} skipped | ${animeProcessed.errors + mangaProcessed.errors} errors`,
-			);
-		} catch (error) {
-			handleError(error);
-		}
+		const totalInserted = animeProcessed.inserted + mangaProcessed.inserted;
+		const totalUpdated = animeProcessed.updated + mangaProcessed.updated;
+		console.log(
+			`🎉 All genres completed! Total processed: ${totalInserted} inserted | ${totalUpdated} updated | ${animeProcessed.skipped + mangaProcessed.skipped} skipped | ${animeProcessed.errors + mangaProcessed.errors} errors`,
+		);
 	});
 
 program.parse();
