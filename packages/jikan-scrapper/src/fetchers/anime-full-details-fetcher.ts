@@ -1,8 +1,10 @@
+import AnimeGenreRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-genre-repository";
+import AnimeProducerRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-producer-repository";
 import AnimeRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-repository";
 import AnimeToGenreRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-to-genre-repository";
 import AnimeToProducersRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-to-producers-repository";
-import type { NewAnimeMangaRelation } from "@trackyrs/database/repositories/myanimelist/anime-manga-relation-repository";
 import AnimeMangaRelationRepository from "@trackyrs/database/repositories/myanimelist/anime-manga-relation-repository";
+import MangaRepository from "@trackyrs/database/repositories/myanimelist/manga/manga-repository";
 import {
 	AnimeGenreRole,
 	type NewAnimeToGenre,
@@ -11,8 +13,13 @@ import {
 	AnimeProducerRole,
 	type NewAnimeToProducers,
 } from "@trackyrs/database/schemas/myanimelist/anime/anime-to-producers-schema";
+import type { NewAnimeMangaRelation } from "@trackyrs/database/schemas/myanimelist/anime-manga-relation";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
+import { AnimeFetcher } from "@/fetchers/anime-fetcher";
+import { GenresFetcher } from "@/fetchers/genres-fetcher";
+import { MangaFetcher } from "@/fetchers/manga-fetcher";
+import { ProducersFetcher } from "@/fetchers/producers-fetcher";
+import { AnimeMapper } from "@/mappers/anime-mapper";
 import type {
 	AnimeFullData,
 	DatabaseOperationResult,
@@ -21,117 +28,82 @@ import type {
 } from "@/types";
 
 export class AnimeFullDetailsFetcher extends BaseFetcher {
-	async insertAll(): Promise<DatabaseOperationResult> {
-		return this.insertRange(1);
+	async upsertAll(): Promise<DatabaseOperationResult> {
+		return this.upsertRange(1);
 	}
 
-	async insertSingle(id: number): Promise<DatabaseOperationResult> {
+	async upsertSingle(id: number): Promise<DatabaseOperationResult> {
 		try {
 			return await this.processAnimeRelationships(id);
 		} catch (error) {
-			this.progressBar.stop();
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update relationships for anime ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert relationships for anime ${id}`, {
+				entityType: "anime-full-details",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertRange(startId = 1): Promise<DatabaseOperationResult> {
+	async upsertRange(startId = 1): Promise<DatabaseOperationResult> {
 		try {
-			return await this.fetchRangeData<JikanResponse<AnimeFullData>>(
-				`${this.baseUrl}/anime`,
-				async (_id, data) => {
-					if (!data || !data.data) {
-						return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
-					}
-					return await this.processAnimeRelationshipsFromData(data.data);
-				},
-				startId,
-			);
+			const animeIds = await AnimeRepository.findIdsFromRange(startId);
+			return this.upsertFromList(animeIds);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update relationships for anime range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			this.stopProgress();
+			console.error(
+				`❌ Failed to upsert relationships for anime starting at ${startId}`,
+				{
+					entityType: "anime-full-details",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-
-		try {
-			return await this.fetchRangeData<JikanResponse<AnimeFullData>>(
-				`${this.baseUrl}/anime`,
-				async (_id, data) => {
-					if (!data || !data.data) {
-						return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
-					}
-					return await this.processAnimeRelationshipsFromData(data.data);
-				},
-				startId,
-				endId,
-			);
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update relationships for anime between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async insertFromList(ids: number[]): Promise<DatabaseOperationResult> {
+	async upsertFromList(ids: number[]): Promise<DatabaseOperationResult> {
 		this.resetProgress();
-		this.operationProgress.total = ids.length;
-		this.progressBar.start(ids.length, 0);
+		this.startProgress(ids.length);
 		const totalResult: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 		try {
 			for (const id of ids) {
-				const result = await this.insertSingle(id);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
+				try {
+					const result = await this.upsertSingle(id);
+					totalResult.inserted += result.inserted;
+					totalResult.updated += result.updated;
+					totalResult.skipped += result.skipped;
+					totalResult.errors += result.errors;
+					totalResult.ids.push(...result.ids);
+				} catch (error) {
+					totalResult.errors++;
+					console.error(`Error processing anime ID ${id}:`, {
+						id,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
+				}
 				this.operationProgress.processed++;
 				this.operationProgress.inserted = totalResult.inserted;
 				this.operationProgress.updated = totalResult.updated;
 				this.operationProgress.skipped = totalResult.skipped;
 				this.operationProgress.errors = totalResult.errors;
-				this.progressBar.update(this.operationProgress.processed);
+				this.updateProgress(this.operationProgress.processed);
 			}
 			return totalResult;
 		} finally {
-			this.progressBar.stop();
+			this.stopProgress();
 		}
-	}
-
-	async updateFromList(ids: number[]): Promise<DatabaseOperationResult> {
-		return this.insertFromList(ids);
 	}
 
 	private async processAnimeRelationships(
@@ -143,15 +115,21 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			);
 
 			if (!data || !data.data) {
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
+				return { inserted: 0, updated: 0, skipped: 1, errors: 0, ids: [] };
 			}
 
 			return await this.processAnimeRelationshipsFromData(data.data);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			return { inserted: 0, updated: 0, skipped: 0, errors: 1 };
+			console.error(
+				`❌ FETCH ERROR: Failed to fetch full data for anime ${animeId}`,
+				{
+					entityType: "anime-full-details",
+					entityId: animeId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
+			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
@@ -163,14 +141,23 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		try {
 			const existingAnime = await AnimeRepository.findById(animeData.mal_id);
 			if (!existingAnime) {
 				// Skip if anime doesn't exist - it should be inserted first using AnimeFetcher
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
+				return { inserted: 0, updated: 0, skipped: 1, errors: 0, ids: [] };
 			}
+
+			await AnimeRepository.update(
+				animeData.mal_id,
+				AnimeMapper.mapAnimeThemeExternalStreamingDetails(animeData),
+			);
+
+			result.updated += 1;
+			result.ids.push(animeData.mal_id);
 
 			if (animeData.relations && animeData.relations.length > 0) {
 				const relationResult = await this.processRelations(
@@ -181,6 +168,7 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 				result.updated += relationResult.updated;
 				result.skipped += relationResult.skipped;
 				result.errors += relationResult.errors;
+				result.ids.push(...relationResult.ids);
 			}
 
 			const genreResult = await this.processGenreRelationships(
@@ -191,6 +179,7 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			result.updated += genreResult.updated;
 			result.skipped += genreResult.skipped;
 			result.errors += genreResult.errors;
+			result.ids.push(...genreResult.ids);
 
 			const producerResult = await this.processProducerRelationships(
 				animeData.mal_id,
@@ -200,14 +189,20 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			result.updated += producerResult.updated;
 			result.skipped += producerResult.skipped;
 			result.errors += producerResult.errors;
+			result.ids.push(...producerResult.ids);
 
 			return result;
 		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to process relationships for anime ${animeData.mal_id}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to process relationships for anime ${animeData.mal_id}`,
+				{
+					entityType: "anime-full-details",
+					entityId: animeData.mal_id,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
@@ -220,6 +215,7 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		try {
@@ -227,23 +223,64 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 
 			for (const relation of relations) {
 				for (const entry of relation.entry) {
-					const newRelation: NewAnimeMangaRelation = {
-						animeSourceId: animeId,
-						type: relation.relation,
-					};
-
 					if (entry.type === "anime") {
-						newRelation.animeDestinationId = entry.mal_id;
-					} else if (entry.type === "manga") {
-						newRelation.mangaDestinationId = entry.mal_id;
-					}
+						const existingAnime = await AnimeRepository.findById(entry.mal_id);
+						if (!existingAnime) {
+							try {
+								const childProgressName = this.createChildProgress(
+									`Related Anime (${entry.mal_id})`,
+									1,
+								);
+								const animeFetcher = new AnimeFetcher(childProgressName);
+								await animeFetcher.upsertSingle(entry.mal_id);
+								this.removeChildProgress(childProgressName);
+							} catch (error) {
+								console.warn(
+									`Failed to fetch missing anime ${entry.mal_id} for relation:`,
+									error,
+								);
+								continue; // Skip this relation if we can't fetch the dependency
+							}
+						}
 
-					relationData.push(newRelation);
+						const newRelation: NewAnimeMangaRelation = {
+							animeSourceId: animeId,
+							animeDestinationId: entry.mal_id,
+							type: relation.relation,
+						};
+						relationData.push(newRelation);
+					} else if (entry.type === "manga") {
+						const existingManga = await MangaRepository.findById(entry.mal_id);
+						if (!existingManga) {
+							try {
+								const childProgressName = this.createChildProgress(
+									`Related Manga (${entry.mal_id})`,
+									1,
+								);
+								const mangaFetcher = new MangaFetcher(childProgressName);
+								await mangaFetcher.upsertSingle(entry.mal_id);
+								this.removeChildProgress(childProgressName);
+							} catch (error) {
+								console.warn(
+									`Failed to fetch missing manga ${entry.mal_id} for relation:`,
+									error,
+								);
+								continue; // Skip this relation if we can't fetch the dependency
+							}
+						}
+
+						const newRelation: NewAnimeMangaRelation = {
+							animeSourceId: animeId,
+							mangaDestinationId: entry.mal_id,
+							type: relation.relation,
+						};
+						relationData.push(newRelation);
+					}
 				}
 			}
 
 			if (relationData.length > 0) {
-				await AnimeMangaRelationRepository.insertMany(relationData);
+				await AnimeMangaRelationRepository.upsertMany(relationData);
 				result.inserted += relationData.length;
 			}
 
@@ -264,6 +301,7 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		try {
@@ -279,20 +317,55 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 				{ genres: animeData.demographics, role: AnimeGenreRole.DEMOGRAPHICS },
 			];
 
+			const missingGenres = new Set<number>();
+			for (const { genres } of genreTypes) {
+				if (genres && genres.length > 0) {
+					for (const genre of genres) {
+						const existingGenre = await AnimeGenreRepository.findById(
+							genre.mal_id,
+						);
+						if (!existingGenre) {
+							missingGenres.add(genre.mal_id);
+						}
+					}
+				}
+			}
+
+			if (missingGenres.size > 0) {
+				try {
+					const childProgressName = this.createChildProgress(
+						`Genres (${missingGenres.size})`,
+						missingGenres.size,
+					);
+					const genresFetcher = new GenresFetcher(childProgressName);
+					await genresFetcher.upsertAll("anime");
+					this.removeChildProgress(childProgressName);
+				} catch (error) {
+					console.warn("Failed to fetch missing anime genres:", error);
+				}
+			}
+
 			for (const { genres, role } of genreTypes) {
 				if (genres && genres.length > 0) {
 					for (const genre of genres) {
-						genreRelations.push({
-							animeId,
-							genreId: genre.mal_id,
-							role,
-						});
+						const existingGenre = await AnimeGenreRepository.findById(
+							genre.mal_id,
+						);
+						if (existingGenre) {
+							genreRelations.push(
+								AnimeMapper.mapGenreRelation(animeId, genre.mal_id, role),
+							);
+						} else {
+							console.warn(
+								`Genre ${genre.mal_id} still missing after fetch attempt`,
+							);
+						}
 					}
 				}
 			}
 
 			if (genreRelations.length > 0) {
-				await AnimeToGenreRepository.insertMany(genreRelations);
+				await AnimeToGenreRepository.upsertMany(genreRelations);
 				result.inserted += genreRelations.length;
 			}
 
@@ -316,6 +389,7 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		try {
@@ -327,20 +401,55 @@ export class AnimeFullDetailsFetcher extends BaseFetcher {
 				{ producers: animeData.studios, role: AnimeProducerRole.STUDIO },
 			];
 
+			const missingProducerIds: number[] = [];
+			for (const { producers } of producerTypes) {
+				if (producers && producers.length > 0) {
+					for (const producer of producers) {
+						const existingProducer = await AnimeProducerRepository.findById(
+							producer.mal_id,
+						);
+						if (!existingProducer) {
+							missingProducerIds.push(producer.mal_id);
+						}
+					}
+				}
+			}
+
+			if (missingProducerIds.length > 0) {
+				try {
+					const childProgressName = this.createChildProgress(
+						`Producers (${missingProducerIds.length})`,
+						missingProducerIds.length,
+					);
+					const producersFetcher = new ProducersFetcher(childProgressName);
+					await producersFetcher.upsertFromList(missingProducerIds);
+					this.removeChildProgress(childProgressName);
+				} catch (error) {
+					console.warn("Failed to fetch missing producers:", error);
+				}
+			}
+
 			for (const { producers, role } of producerTypes) {
 				if (producers && producers.length > 0) {
 					for (const producer of producers) {
-						producerRelations.push({
-							animeId,
-							producerId: producer.mal_id,
-							role,
-						});
+						const existingProducer = await AnimeProducerRepository.findById(
+							producer.mal_id,
+						);
+						if (existingProducer) {
+							producerRelations.push(
+								AnimeMapper.mapProducerRelation(animeId, producer.mal_id, role),
+							);
+						} else {
+							console.warn(
+								`Producer ${producer.mal_id} still missing after fetch attempt`,
+							);
+						}
 					}
 				}
 			}
 
 			if (producerRelations.length > 0) {
-				await AnimeToProducersRepository.insertMany(producerRelations);
+				await AnimeToProducersRepository.upsertMany(producerRelations);
 				result.inserted += producerRelations.length;
 			}
 

@@ -1,7 +1,6 @@
 import PeopleRepository from "@trackyrs/database/repositories/myanimelist/people-repository";
 import type { NewPeople } from "@trackyrs/database/schemas/myanimelist/people-schema";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
 import { PeopleMapper } from "@/mappers/people-mapper";
 import type {
 	DatabaseOperationResult,
@@ -10,335 +9,188 @@ import type {
 } from "@/types";
 
 export class PeopleFetcher extends BaseFetcher {
-	async insertAll(): Promise<DatabaseOperationResult> {
-		return this.insertRange(1);
+	async upsertAll(): Promise<DatabaseOperationResult> {
+		return this.upsertRange(1);
 	}
 
-	async updateAll(): Promise<DatabaseOperationResult> {
-		return this.updateRange(1);
-	}
-
-	async insertSingle(id: number): Promise<DatabaseOperationResult> {
+	async upsertSingle(id: number): Promise<DatabaseOperationResult> {
 		try {
-			return await this.processPersonId(id, false);
+			return await this.processPersonId(id);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert single person ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert single person ${id}`, {
+				entityType: "person",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertRange(startId = 1): Promise<DatabaseOperationResult> {
+	async upsertRange(startId = 1): Promise<DatabaseOperationResult> {
 		const startPage =
 			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
 		try {
 			return await this.fetchPaginatedData<PersonData>(
 				`${this.baseUrl}/people`,
 				(data: JikanResponse<PersonData[]>) =>
-					this.processPersonPageRange(data, startId, false),
+					this.processPersonPageRange(data, startId),
 				startPage,
 				false,
 			);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert people range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ Failed to upsert people range starting from ${startId}`,
+				{
+					entityType: "person",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		const endPage = Math.floor((endId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			let currentPage = startPage;
-			const totalResult = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
-			while (currentPage <= endPage) {
-				const result = await this.fetchPaginatedData<PersonData>(
-					`${this.baseUrl}/people`,
-					(data: JikanResponse<PersonData[]>) =>
-						this.processPersonPageBetween(data, startId, endId, false),
-					currentPage,
-					true,
-				);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				currentPage++;
-			}
-			return totalResult;
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert people between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateSingle(id: number): Promise<DatabaseOperationResult> {
-		try {
-			return await this.processPersonId(id, true);
-		} catch (error) {
-			this.progressBar.stop();
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update single person ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateRange(startId = 1): Promise<DatabaseOperationResult> {
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			return await this.fetchPaginatedData<PersonData>(
-				`${this.baseUrl}/people`,
-				(data) => this.processPersonPageRange(data, startId, true),
-				startPage,
-				false,
-			);
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update people range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		const endPage = Math.floor((endId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			let currentPage = startPage;
-			const totalResult = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
-			while (currentPage <= endPage) {
-				const result = await this.fetchPaginatedData<PersonData>(
-					`${this.baseUrl}/people`,
-					(data) => this.processPersonPageBetween(data, startId, endId, true),
-					currentPage,
-					true,
-				);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				currentPage++;
-			}
-			return totalResult;
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update people between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async insertFromList(ids: number[]): Promise<DatabaseOperationResult> {
+	async upsertFromList(ids: number[]): Promise<DatabaseOperationResult> {
 		this.resetProgress();
-		this.operationProgress.total = ids.length;
-		this.progressBar.start(ids.length, 0);
+		this.startProgress(ids.length);
 		const totalResult: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 		try {
 			for (const id of ids) {
-				const result = await this.insertSingle(id);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
+				try {
+					const result = await this.upsertSingle(id);
+					totalResult.inserted += result.inserted;
+					totalResult.updated += result.updated;
+					totalResult.skipped += result.skipped;
+					totalResult.errors += result.errors;
+					totalResult.ids.push(...result.ids);
+				} catch (error) {
+					totalResult.errors++;
+					console.error(`Error processing person ID ${id}:`, {
+						id,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
+				}
 				this.operationProgress.processed++;
 				this.operationProgress.inserted = totalResult.inserted;
 				this.operationProgress.updated = totalResult.updated;
 				this.operationProgress.skipped = totalResult.skipped;
 				this.operationProgress.errors = totalResult.errors;
-				this.progressBar.update(this.operationProgress.processed);
+				this.updateProgress(this.operationProgress.processed);
 			}
 			return totalResult;
 		} finally {
-			this.progressBar.stop();
+			this.stopProgress();
 		}
 	}
 
-	async updateFromList(ids: number[]): Promise<DatabaseOperationResult> {
-		this.resetProgress();
-		this.operationProgress.total = ids.length;
-		this.progressBar.start(ids.length, 0);
-		const totalResult: DatabaseOperationResult = {
-			inserted: 0,
-			updated: 0,
-			skipped: 0,
-			errors: 0,
-		};
-		try {
-			for (const id of ids) {
-				const result = await this.updateSingle(id);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				this.operationProgress.processed++;
-				this.operationProgress.inserted = totalResult.inserted;
-				this.operationProgress.updated = totalResult.updated;
-				this.operationProgress.skipped = totalResult.skipped;
-				this.operationProgress.errors = totalResult.errors;
-				this.progressBar.update(this.operationProgress.processed);
-			}
-			return totalResult;
-		} finally {
-			this.progressBar.stop();
-		}
-	}
-
-	private async processPersonId(
-		id: number,
-		isUpdate: boolean,
-	): Promise<DatabaseOperationResult> {
+	private async processPersonId(id: number): Promise<DatabaseOperationResult> {
 		try {
 			const data = await this.fetchJson<JikanResponse<PersonData>>(
 				`${this.baseUrl}/people/${id}`,
 			);
 
 			if (!data || !data.data) {
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
+				return { inserted: 0, updated: 0, skipped: 1, errors: 0, ids: [] };
 			}
 
-			return await this.insertOrUpdatePerson(data.data, isUpdate);
+			return await this.upsertPerson(data.data);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			return { inserted: 0, updated: 0, skipped: 0, errors: 1 };
+			console.error(
+				`❌ FETCH ERROR: Failed to fetch full data for people ${id}`,
+				{
+					entityType: "people",
+					entityId: id,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
+			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
-	private async insertOrUpdatePerson(
+	private async upsertPerson(
 		personData: PersonData,
-		forceUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		try {
 			const mappedData: NewPeople = PeopleMapper.mapPeopleData(personData);
-
 			const existingPerson = await PeopleRepository.findById(personData.mal_id);
 
-			if (existingPerson) {
-				if (forceUpdate) {
-					await PeopleRepository.update(personData.mal_id, mappedData);
-					return { inserted: 0, updated: 1, skipped: 0, errors: 0 };
-				}
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
-			}
+			const upsertedPerson = await PeopleRepository.upsert(mappedData);
 
-			await PeopleRepository.insert(mappedData);
-			return { inserted: 1, updated: 0, skipped: 0, errors: 0 };
+			if (existingPerson) {
+				return {
+					inserted: 0,
+					updated: 1,
+					skipped: 0,
+					errors: 0,
+					ids: [upsertedPerson.id],
+				};
+			}
+			return {
+				inserted: 1,
+				updated: 0,
+				skipped: 0,
+				errors: 0,
+				ids: [upsertedPerson.id],
+			};
 		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to insert/update person ${personData.mal_id}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to upsert person ${personData.mal_id}`,
+				{
+					entityType: "person",
+					entityId: personData.mal_id,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
 	private async processPersonPageRange(
 		data: JikanResponse<PersonData[]>,
 		startId: number,
-		isUpdate = false,
 	): Promise<DatabaseOperationResult> {
-		return this.processPersonPageFiltered(
-			data,
-			(mal_id) => mal_id >= startId,
-			isUpdate,
-		);
-	}
-
-	private async processPersonPageBetween(
-		data: JikanResponse<PersonData[]>,
-		startId: number,
-		endId: number,
-		isUpdate = false,
-	): Promise<DatabaseOperationResult> {
-		return this.processPersonPageFiltered(
-			data,
-			(mal_id) => mal_id >= startId && mal_id <= endId,
-			isUpdate,
-		);
+		return this.processPersonPageFiltered(data, (mal_id) => mal_id >= startId);
 	}
 
 	private async processPersonPageFiltered(
 		data: JikanResponse<PersonData[]>,
 		filter: (mal_id: number) => boolean,
-		isUpdate = false,
 	): Promise<DatabaseOperationResult> {
 		const result: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		for (const personData of data.data) {
 			if (filter(personData.mal_id)) {
 				try {
-					const itemResult = await this.insertOrUpdatePerson(
-						personData,
-						isUpdate,
-					);
+					const itemResult = await this.upsertPerson(personData);
 					result.inserted += itemResult.inserted;
 					result.updated += itemResult.updated;
 					result.skipped += itemResult.skipped;
 					result.errors += itemResult.errors;
+					result.ids.push(...itemResult.ids);
 				} catch (error) {
 					result.errors++;
-					console.warn(`Error processing person ${personData.mal_id}:`, error);
+					console.error(`Error processing person ${personData.mal_id}:`, {
+						id: personData.mal_id,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
 				}
 			}
 		}

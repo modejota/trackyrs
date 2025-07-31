@@ -3,7 +3,6 @@ import MangaGenreRepository from "@trackyrs/database/repositories/myanimelist/ma
 import type { NewAnimeGenre } from "@trackyrs/database/schemas/myanimelist/anime/anime-genre-schema";
 import type { NewMangaGenre } from "@trackyrs/database/schemas/myanimelist/manga/manga-genre-schema";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
 import { GenreMapper } from "@/mappers/genre-mapper";
 import type {
 	DatabaseOperationResult,
@@ -12,65 +11,80 @@ import type {
 } from "@/types";
 
 export class GenresFetcher extends BaseFetcher {
-	async insertAll(type: "anime" | "manga"): Promise<DatabaseOperationResult> {
+	async upsertAll(type: "anime" | "manga"): Promise<DatabaseOperationResult> {
 		if (type !== "anime" && type !== "manga") {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Invalid genre type: ${type}. Must be 'anime' or 'manga'`,
+			console.error(
+				`❌ VALIDATION_ERROR: Invalid genre type: ${type}. Must be 'anime' or 'manga'`,
+				{
+					entityType: "genre",
+					type,
+					validTypes: ["anime", "manga"],
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 		try {
 			this.resetProgress();
-			this.progressBar.start(1, 0);
+			this.startProgress(1);
 
 			const result = await this.fetchGenreData(type);
 
-			this.progressBar.stop();
+			this.stopProgress();
 			return result;
 		} catch (error) {
-			this.progressBar.stop();
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to insert all ${type} genres`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert all ${type} genres`, {
+				entityType: "genre",
+				type,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
 	/**
-	 * Not applicable for genres - use insertAll instead
+	 * Not applicable for genres - use upsertAll instead
 	 */
-	async insertSingle(_id: number): Promise<DatabaseOperationResult> {
-		throw new FetcherError(
-			FetcherErrorType.VALIDATION_ERROR,
-			"insertSingle is not applicable for genres. Use insertAll('anime') or insertAll('manga') instead.",
+	async upsertSingle(_id: number): Promise<DatabaseOperationResult> {
+		console.error(
+			`❌ VALIDATION_ERROR: upsertSingle is not applicable for genres. Use upsertAll('anime') or upsertAll('manga') instead.`,
+			{
+				entityType: "genre",
+				method: "upsertSingle",
+				suggestion: "Use upsertAll('anime') or upsertAll('manga') instead",
+			},
 		);
+		return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 	}
 
 	/**
-	 * Not applicable for genres - use insertAll instead
+	 * Not applicable for genres - use upsertAll instead
 	 */
-	async insertRange(_startId?: number): Promise<DatabaseOperationResult> {
-		throw new FetcherError(
-			FetcherErrorType.VALIDATION_ERROR,
-			"insertRange is not applicable for genres. Use insertAll('anime') or insertAll('manga') instead.",
+	async upsertRange(_startId?: number): Promise<DatabaseOperationResult> {
+		console.error(
+			`❌ VALIDATION_ERROR: upsertRange is not applicable for genres. Use upsertAll('anime') or upsertAll('manga') instead.`,
+			{
+				entityType: "genre",
+				method: "upsertRange",
+				suggestion: "Use upsertAll('anime') or upsertAll('manga') instead",
+			},
 		);
+		return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 	}
-
 	/**
-	 * Not applicable for genres - use insertAll instead
+	 * Not applicable for genres - use upsertAll instead
 	 */
-	async insertBetween(
-		_startId: number,
-		_endId: number,
-	): Promise<DatabaseOperationResult> {
-		throw new FetcherError(
-			FetcherErrorType.VALIDATION_ERROR,
-			"insertBetween is not applicable for genres. Use insertAll('anime') or insertAll('manga') instead.",
+	async upsertFromList(_ids: number[]): Promise<DatabaseOperationResult> {
+		console.error(
+			`❌ VALIDATION_ERROR: upsertFromList is not applicable for genres. Use upsertAll('anime') or upsertAll('manga') instead.`,
+			{
+				entityType: "genre",
+				method: "upsertFromList",
+				suggestion: "Use upsertAll('anime') or upsertAll('manga') instead",
+			},
 		);
+		return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 	}
 
 	private async fetchGenreData(
@@ -82,7 +96,7 @@ export class GenresFetcher extends BaseFetcher {
 			);
 
 			if (!data || !data.data) {
-				return { inserted: 0, updated: 0, skipped: 0, errors: 1 };
+				return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 			}
 
 			const genreMap = new Map<number, GenreData>();
@@ -99,17 +113,19 @@ export class GenresFetcher extends BaseFetcher {
 					updated: 0,
 					skipped: 0,
 					errors: data.data.length,
+					ids: [],
 				};
 			}
 
 			this.operationProgress.total = validGenres.length;
-			this.progressBar.setTotal(validGenres.length);
+			this.updateProgress(0);
 
 			const result: DatabaseOperationResult = {
 				inserted: 0,
 				updated: 0,
 				skipped: 0,
 				errors: 0,
+				ids: [],
 			};
 
 			const batchSize = 20;
@@ -118,17 +134,28 @@ export class GenresFetcher extends BaseFetcher {
 
 				const batchPromises = batch.map(async (genreData) => {
 					try {
-						const genreResult = await this.insertOrUpdateGenre(genreData, type);
+						const genreResult = await this.upsertGenre(genreData, type);
 						return {
 							success: true,
 							result: genreResult,
 							genreId: genreData.mal_id,
 						};
 					} catch (error) {
-						console.warn(`Error processing genre ${genreData.mal_id}:`, error);
+						console.error(`Error processing genre ${genreData.mal_id}:`, {
+							id: genreData.mal_id,
+							type,
+							error: error instanceof Error ? error.message : String(error),
+							stack: error instanceof Error ? error.stack : undefined,
+						});
 						return {
 							success: false,
-							result: { inserted: 0, updated: 0, skipped: 0, errors: 1 },
+							result: {
+								inserted: 0,
+								updated: 0,
+								skipped: 0,
+								errors: 1,
+								ids: [],
+							},
 							genreId: genreData.mal_id,
 						};
 					}
@@ -141,65 +168,105 @@ export class GenresFetcher extends BaseFetcher {
 					result.updated += batchResult.result.updated;
 					result.skipped += batchResult.result.skipped;
 					result.errors += batchResult.result.errors;
+					result.ids.push(...batchResult.result.ids);
 
 					this.operationProgress.processed++;
 					this.operationProgress.inserted = result.inserted;
 					this.operationProgress.updated = result.updated;
 					this.operationProgress.skipped = result.skipped;
 					this.operationProgress.errors = result.errors;
-					this.progressBar.update(this.operationProgress.processed);
-				}
-
-				// Small delay between batches to prevent overwhelming the database
-				if (i + batchSize < validGenres.length) {
-					await new Promise((resolve) => setTimeout(resolve, 100));
+					this.updateProgress(this.operationProgress.processed);
 				}
 			}
 
 			return result;
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.NETWORK_ERROR,
-				`Failed to fetch ${type} genres from API`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ NETWORK_ERROR: Failed to fetch ${type} genres from API`,
+				{
+					entityType: "genre",
+					type,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	private async insertOrUpdateGenre(
+	private async upsertGenre(
 		genreData: GenreData,
 		type: "anime" | "manga",
 	): Promise<DatabaseOperationResult> {
 		try {
 			if (type === "anime") {
-				return await this.insertOrUpdateAnimeGenre(genreData);
+				return await this.upsertAnimeGenre(genreData);
 			}
-			return await this.insertOrUpdateMangaGenre(genreData);
+			return await this.upsertMangaGenre(genreData);
 		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to insert/update ${type} genre ${genreData.mal_id}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to upsert ${type} genre ${genreData.mal_id}`,
+				{
+					entityType: "genre",
+					entityId: genreData.mal_id,
+					type,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	private async insertOrUpdateAnimeGenre(
+	private async upsertAnimeGenre(
 		genreData: GenreData,
 	): Promise<DatabaseOperationResult> {
 		const mappedData: NewAnimeGenre = GenreMapper.mapAnimeGenreData(genreData);
-		await AnimeGenreRepository.insert(mappedData);
-		return { inserted: 1, updated: 0, skipped: 0, errors: 0 };
+		const existingGenre = await AnimeGenreRepository.findById(genreData.mal_id);
+
+		const upsertedGenre = await AnimeGenreRepository.upsert(mappedData);
+
+		if (existingGenre) {
+			return {
+				inserted: 0,
+				updated: 1,
+				skipped: 0,
+				errors: 0,
+				ids: [upsertedGenre.id],
+			};
+		}
+		return {
+			inserted: 1,
+			updated: 0,
+			skipped: 0,
+			errors: 0,
+			ids: [upsertedGenre.id],
+		};
 	}
 
-	private async insertOrUpdateMangaGenre(
+	private async upsertMangaGenre(
 		genreData: GenreData,
 	): Promise<DatabaseOperationResult> {
 		const mappedData: NewMangaGenre = GenreMapper.mapMangaGenreData(genreData);
-		await MangaGenreRepository.insert(mappedData);
-		return { inserted: 1, updated: 0, skipped: 0, errors: 0 };
+		const existingGenre = await MangaGenreRepository.findById(genreData.mal_id);
+
+		const upsertedGenre = await MangaGenreRepository.upsert(mappedData);
+
+		if (existingGenre) {
+			return {
+				inserted: 0,
+				updated: 1,
+				skipped: 0,
+				errors: 0,
+				ids: [upsertedGenre.id],
+			};
+		}
+		return {
+			inserted: 1,
+			updated: 0,
+			skipped: 0,
+			errors: 0,
+			ids: [upsertedGenre.id],
+		};
 	}
 }

@@ -1,7 +1,8 @@
+import CharacterRepository from "@trackyrs/database/repositories/myanimelist/character/character-repository";
 import MangaRepository from "@trackyrs/database/repositories/myanimelist/manga/manga-repository";
 import MangaToCharacterRepository from "@trackyrs/database/repositories/myanimelist/manga/manga-to-character-repository";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
+import { CharactersFetcher } from "@/fetchers/characters-fetcher";
 import { MangaMapper } from "@/mappers/manga-mapper";
 import type {
 	DatabaseOperationResult,
@@ -10,75 +11,46 @@ import type {
 } from "@/types";
 
 export class MangaCharactersFetcher extends BaseFetcher {
-	async insertAll(): Promise<DatabaseOperationResult> {
-		return this.insertRange(1);
+	async upsertAll(): Promise<DatabaseOperationResult> {
+		return this.upsertRange(1);
 	}
 
-	async insertSingle(id: number): Promise<DatabaseOperationResult> {
+	async upsertSingle(id: number): Promise<DatabaseOperationResult> {
 		try {
 			return await this.processMangaCharacters(id);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert characters for manga ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert characters for manga ${id}`, {
+				entityType: "manga-characters",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertRange(startId?: number): Promise<DatabaseOperationResult> {
+	async upsertRange(startId = 1): Promise<DatabaseOperationResult> {
 		try {
-			const mangaIds = startId
-				? await MangaRepository.findIdsFromRangeGreaterThanOrEqual(startId)
-				: await MangaRepository.findAllIds();
-
-			return await this.processMangaList(mangaIds);
+			const mangaIds =
+				await MangaRepository.findIdsFromRangeGreaterThanOrEqual(startId);
+			return this.upsertFromList(mangaIds);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert characters for manga range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			this.stopProgress();
+			console.error(
+				`❌ Failed to upsert characters for manga range starting from ${startId}`,
+				{
+					entityType: "manga-characters",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-
-		try {
-			const mangaIds = await MangaRepository.findIdsBetween(startId, endId);
-			return await this.processMangaList(mangaIds);
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert characters for manga between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async insertFromList(ids: number[]): Promise<DatabaseOperationResult> {
-		return this.processMangaList(ids);
-	}
-
-	async updateFromList(ids: number[]): Promise<DatabaseOperationResult> {
+	async upsertFromList(ids: number[]): Promise<DatabaseOperationResult> {
 		return this.processMangaList(ids);
 	}
 
@@ -86,17 +58,17 @@ export class MangaCharactersFetcher extends BaseFetcher {
 		mangaIds: number[],
 	): Promise<DatabaseOperationResult> {
 		if (mangaIds.length === 0)
-			return { inserted: 0, updated: 0, skipped: 0, errors: 0 };
+			return { inserted: 0, updated: 0, skipped: 0, errors: 0, ids: [] };
 
 		this.resetProgress();
-		this.operationProgress.total = mangaIds.length;
-		this.progressBar.start(mangaIds.length, 0);
+		this.startProgress(mangaIds.length);
 
 		const totalResult: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		try {
@@ -107,9 +79,14 @@ export class MangaCharactersFetcher extends BaseFetcher {
 					totalResult.updated += result.updated;
 					totalResult.skipped += result.skipped;
 					totalResult.errors += result.errors;
+					totalResult.ids.push(...result.ids);
 				} catch (error) {
 					totalResult.errors++;
-					console.warn(`Error processing manga ${mangaId}:`, error);
+					console.error(`Error processing manga ID ${mangaId}:`, {
+						id: mangaId,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
 				}
 
 				this.operationProgress.processed++;
@@ -117,12 +94,12 @@ export class MangaCharactersFetcher extends BaseFetcher {
 				this.operationProgress.updated = totalResult.updated;
 				this.operationProgress.skipped = totalResult.skipped;
 				this.operationProgress.errors = totalResult.errors;
-				this.progressBar.update(this.operationProgress.processed);
+				this.updateProgress(this.operationProgress.processed);
 			}
 
 			return totalResult;
 		} finally {
-			this.progressBar.stop();
+			this.stopProgress();
 		}
 	}
 
@@ -134,6 +111,7 @@ export class MangaCharactersFetcher extends BaseFetcher {
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		try {
@@ -142,6 +120,32 @@ export class MangaCharactersFetcher extends BaseFetcher {
 			>(`${this.baseUrl}/manga/${mangaId}/characters`);
 
 			if (charactersData?.data) {
+				const missingCharacterIds: number[] = [];
+				for (const character of charactersData.data) {
+					if (character.character?.mal_id) {
+						const existingCharacter = await CharacterRepository.findById(
+							character.character.mal_id,
+						);
+						if (!existingCharacter) {
+							missingCharacterIds.push(character.character.mal_id);
+						}
+					}
+				}
+
+				if (missingCharacterIds.length > 0) {
+					try {
+						const childProgressName = this.createChildProgress(
+							`Characters (${missingCharacterIds.length})`,
+							missingCharacterIds.length,
+						);
+						const charactersFetcher = new CharactersFetcher(childProgressName);
+						await charactersFetcher.upsertFromList(missingCharacterIds);
+						this.removeChildProgress(childProgressName);
+					} catch (error) {
+						console.warn("Failed to fetch missing characters:", error);
+					}
+				}
+
 				const characterRelations = charactersData.data
 					.map((character) =>
 						MangaMapper.mapCharacterRelation(mangaId, character),
@@ -153,21 +157,23 @@ export class MangaCharactersFetcher extends BaseFetcher {
 
 				if (characterRelations.length > 0) {
 					const characterResult =
-						await MangaToCharacterRepository.insertMany(characterRelations);
-					result.inserted += characterResult.rowCount ?? 0;
+						await MangaToCharacterRepository.upsertMany(characterRelations);
+					result.inserted += characterResult.length ?? 0;
 				}
 			}
 
 			return result;
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to process characters for manga ${mangaId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to process characters for manga ${mangaId}`,
+				{
+					entityType: "manga-characters",
+					entityId: mangaId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 }

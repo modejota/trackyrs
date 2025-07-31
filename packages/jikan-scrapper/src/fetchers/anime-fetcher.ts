@@ -1,7 +1,6 @@
 import AnimeRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-repository";
 import type { NewAnime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
 import { AnimeMapper } from "@/mappers/anime-mapper";
 import type {
 	AnimeData,
@@ -10,31 +9,26 @@ import type {
 } from "@/types";
 
 export class AnimeFetcher extends BaseFetcher {
-	async insertAll(): Promise<DatabaseOperationResult> {
-		return this.insertRange(1);
+	async upsertAll(): Promise<DatabaseOperationResult> {
+		return this.upsertRange(1);
 	}
 
-	async updateAll(): Promise<DatabaseOperationResult> {
-		return this.updateRange(1);
-	}
-
-	async insertSingle(id: number): Promise<DatabaseOperationResult> {
+	async upsertSingle(id: number): Promise<DatabaseOperationResult> {
 		try {
-			return await this.processAnimeId(id, false);
+			return await this.processAnimeId(id);
 		} catch (error) {
-			this.progressBar.stop();
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert single anime ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert single anime ${id}`, {
+				entityType: "anime",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertRange(startId = 1): Promise<DatabaseOperationResult> {
+	async upsertRange(startId = 1): Promise<DatabaseOperationResult> {
 		const startPage =
 			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
 		try {
@@ -45,69 +39,35 @@ export class AnimeFetcher extends BaseFetcher {
 				false,
 			);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert anime range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ Failed to upsert anime range starting from ${startId}`,
+				{
+					entityType: "anime",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		const endPage = Math.floor((endId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			let currentPage = startPage;
-			const totalResult = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
-			while (currentPage <= endPage) {
-				const result = await this.fetchPaginatedData<AnimeData>(
-					`${this.baseUrl}/anime`,
-					(data) => this.processAnimePageBetween(data, startId, endId),
-					currentPage,
-					true,
-				);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				currentPage++;
-			}
-			return totalResult;
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert anime between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async insertBySeason(
+	async upsertBySeason(
 		year: number,
 		season: string,
 	): Promise<DatabaseOperationResult> {
 		const validSeasons = ["winter", "spring", "summer", "fall"];
 		if (!validSeasons.includes(season.toLowerCase())) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Invalid season: ${season}. Must be one of: ${validSeasons.join(", ")}`,
+			console.error(
+				`❌ VALIDATION_ERROR: Invalid season: ${season}. Must be one of: ${validSeasons.join(", ")}`,
+				{
+					entityType: "anime",
+					year,
+					season,
+					validSeasons,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 		try {
 			return await this.fetchPaginatedData<AnimeData>(
@@ -117,176 +77,68 @@ export class AnimeFetcher extends BaseFetcher {
 				false,
 			);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert anime for ${season} ${year}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			console.error(`❌ Failed to upsert anime for ${season} ${year}`, {
+				entityType: "anime",
+				year,
+				season,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async updateSingle(id: number): Promise<DatabaseOperationResult> {
-		try {
-			return await this.processAnimeId(id, true);
-		} catch (error) {
-			this.progressBar.stop();
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update single anime ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateRange(startId = 1): Promise<DatabaseOperationResult> {
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			return await this.fetchPaginatedData<AnimeData>(
-				`${this.baseUrl}/anime`,
-				(data) => this.processAnimePageRange(data, startId, true),
-				startPage,
-				false,
-			);
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update anime range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		const endPage = Math.floor((endId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			let currentPage = startPage;
-			const totalResult = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
-			while (currentPage <= endPage) {
-				const result = await this.fetchPaginatedData<AnimeData>(
-					`${this.baseUrl}/anime`,
-					(data) => this.processAnimePageBetween(data, startId, endId, true),
-					currentPage,
-					true,
-				);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				currentPage++;
-			}
-			return totalResult;
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update anime between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async insertFromList(ids: number[]): Promise<DatabaseOperationResult> {
+	async upsertFromList(ids: number[]): Promise<DatabaseOperationResult> {
 		this.resetProgress();
-		this.operationProgress.total = ids.length;
-		this.progressBar.start(ids.length, 0);
+		this.startProgress(ids.length);
 		const totalResult: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 		try {
 			for (const id of ids) {
-				const result = await this.insertSingle(id);
+				const result = await this.upsertSingle(id);
 				totalResult.inserted += result.inserted;
 				totalResult.updated += result.updated;
 				totalResult.skipped += result.skipped;
 				totalResult.errors += result.errors;
+				totalResult.ids.push(...result.ids);
+
 				this.operationProgress.processed++;
 				this.operationProgress.inserted = totalResult.inserted;
 				this.operationProgress.updated = totalResult.updated;
 				this.operationProgress.skipped = totalResult.skipped;
 				this.operationProgress.errors = totalResult.errors;
-				this.progressBar.update(this.operationProgress.processed);
+				this.updateProgress(this.operationProgress.processed);
 			}
 			return totalResult;
 		} finally {
-			this.progressBar.stop();
+			this.stopProgress();
 		}
 	}
 
-	async updateFromList(ids: number[]): Promise<DatabaseOperationResult> {
-		this.resetProgress();
-		this.operationProgress.total = ids.length;
-		this.progressBar.start(ids.length, 0);
-		const totalResult: DatabaseOperationResult = {
-			inserted: 0,
-			updated: 0,
-			skipped: 0,
-			errors: 0,
-		};
-		try {
-			for (const id of ids) {
-				const result = await this.updateSingle(id);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				this.operationProgress.processed++;
-				this.operationProgress.inserted = totalResult.inserted;
-				this.operationProgress.updated = totalResult.updated;
-				this.operationProgress.skipped = totalResult.skipped;
-				this.operationProgress.errors = totalResult.errors;
-				this.progressBar.update(this.operationProgress.processed);
-			}
-			return totalResult;
-		} finally {
-			this.progressBar.stop();
-		}
-	}
-
-	private async processAnimeId(
-		id: number,
-		isUpdate: boolean,
-	): Promise<DatabaseOperationResult> {
+	private async processAnimeId(id: number): Promise<DatabaseOperationResult> {
 		try {
 			const data = await this.fetchJson<JikanResponse<AnimeData>>(
 				`${this.baseUrl}/anime/${id}`,
 			);
 
 			if (!data || !data.data) {
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
+				return { inserted: 0, updated: 0, skipped: 1, errors: 0, ids: [] };
 			}
 
-			return await this.insertOrUpdateAnime(data.data, isUpdate);
+			return await this.upsertAnime(data.data);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			return { inserted: 0, updated: 0, skipped: 0, errors: 1 };
+			console.error(`❌ Error processing anime ID ${id}`, {
+				entityType: "anime",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
@@ -298,77 +150,96 @@ export class AnimeFetcher extends BaseFetcher {
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		for (const animeData of data.data) {
 			try {
-				const itemResult = await this.insertOrUpdateAnime(animeData, false);
+				const itemResult = await this.upsertAnime(animeData);
 				result.inserted += itemResult.inserted;
 				result.updated += itemResult.updated;
 				result.skipped += itemResult.skipped;
 				result.errors += itemResult.errors;
+				result.ids.push(...itemResult.ids);
 			} catch (error) {
 				result.errors++;
-				console.warn(`Error processing anime ${animeData.mal_id}:`, error);
+				console.error(`Error processing anime ${animeData.mal_id}:`, {
+					id: animeData.mal_id,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				});
 			}
 		}
 
 		return result;
 	}
 
-	private async insertOrUpdateAnime(
+	private async upsertAnime(
 		animeData: AnimeData,
-		forceUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		try {
 			const mappedData: NewAnime = AnimeMapper.mapAnimeData(animeData);
-
 			const existingAnime = await AnimeRepository.findById(animeData.mal_id);
 
-			if (existingAnime) {
-				if (forceUpdate) {
-					await AnimeRepository.update(animeData.mal_id, mappedData);
-					return { inserted: 0, updated: 1, skipped: 0, errors: 0 };
-				}
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
-			}
+			const upsertedAnime = await AnimeRepository.upsert(mappedData);
 
-			await AnimeRepository.insert(mappedData);
-			return { inserted: 1, updated: 0, skipped: 0, errors: 0 };
+			if (existingAnime) {
+				return {
+					inserted: 0,
+					updated: 1,
+					skipped: 0,
+					errors: 0,
+					ids: [upsertedAnime.id],
+				};
+			}
+			return {
+				inserted: 1,
+				updated: 0,
+				skipped: 0,
+				errors: 0,
+				ids: [upsertedAnime.id],
+			};
 		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to insert/update anime ${animeData.mal_id}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to upsert anime ${animeData.mal_id}`,
+				{
+					entityType: "anime",
+					entityId: animeData.mal_id,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
 	private async processAnimePageFiltered(
 		data: JikanResponse<AnimeData[]>,
 		filter: (mal_id: number) => boolean,
-		isUpdate = false,
 	): Promise<DatabaseOperationResult> {
 		const result: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 		for (const animeData of data.data) {
 			if (filter(animeData.mal_id)) {
 				try {
-					const itemResult = await this.insertOrUpdateAnime(
-						animeData,
-						isUpdate,
-					);
+					const itemResult = await this.upsertAnime(animeData);
 					result.inserted += itemResult.inserted;
 					result.updated += itemResult.updated;
 					result.skipped += itemResult.skipped;
 					result.errors += itemResult.errors;
+					result.ids.push(...itemResult.ids);
 				} catch (error) {
 					result.errors++;
-					console.warn(`Error processing anime ${animeData.mal_id}:`, error);
+					console.error(`Error processing anime ${animeData.mal_id}:`, {
+						id: animeData.mal_id,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
 				}
 			}
 		}
@@ -378,25 +249,7 @@ export class AnimeFetcher extends BaseFetcher {
 	private async processAnimePageRange(
 		data: JikanResponse<AnimeData[]>,
 		startId: number,
-		isUpdate = false,
 	): Promise<DatabaseOperationResult> {
-		return this.processAnimePageFiltered(
-			data,
-			(mal_id) => mal_id >= startId,
-			isUpdate,
-		);
-	}
-
-	private async processAnimePageBetween(
-		data: JikanResponse<AnimeData[]>,
-		startId: number,
-		endId: number,
-		isUpdate = false,
-	): Promise<DatabaseOperationResult> {
-		return this.processAnimePageFiltered(
-			data,
-			(mal_id) => mal_id >= startId && mal_id <= endId,
-			isUpdate,
-		);
+		return this.processAnimePageFiltered(data, (mal_id) => mal_id >= startId);
 	}
 }

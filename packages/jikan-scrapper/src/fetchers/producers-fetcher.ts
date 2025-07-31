@@ -1,7 +1,6 @@
 import AnimeProducerRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-producer-repository";
 import type { NewProducer } from "@trackyrs/database/schemas/myanimelist/anime/anime-producer-schema";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
 import { ProducerMapper } from "@/mappers/producer-mapper";
 import type {
 	DatabaseOperationResult,
@@ -10,30 +9,26 @@ import type {
 } from "@/types";
 
 export class ProducersFetcher extends BaseFetcher {
-	async insertAll(): Promise<DatabaseOperationResult> {
-		return this.insertRange(1);
+	async upsertAll(): Promise<DatabaseOperationResult> {
+		return this.upsertRange(1);
 	}
 
-	async updateAll(): Promise<DatabaseOperationResult> {
-		return this.updateRange(1);
-	}
-
-	async insertSingle(id: number): Promise<DatabaseOperationResult> {
+	async upsertSingle(id: number): Promise<DatabaseOperationResult> {
 		try {
-			return await this.processProducerId(id, false);
+			return await this.processProducerId(id);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert single producer ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert single producer ${id}`, {
+				entityType: "producer",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertRange(startId = 1): Promise<DatabaseOperationResult> {
+	async upsertRange(startId = 1): Promise<DatabaseOperationResult> {
 		const startPage =
 			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
 		try {
@@ -44,141 +39,61 @@ export class ProducersFetcher extends BaseFetcher {
 				false,
 			);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert producer range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ Failed to upsert producer range starting from ${startId}`,
+				{
+					entityType: "producer",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	async insertBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		const endPage = Math.floor((endId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
+	async upsertFromList(ids: number[]): Promise<DatabaseOperationResult> {
+		this.resetProgress();
+		this.startProgress(ids.length);
+		const totalResult: DatabaseOperationResult = {
+			inserted: 0,
+			updated: 0,
+			skipped: 0,
+			errors: 0,
+			ids: [],
+		};
 		try {
-			let currentPage = startPage;
-			const totalResult = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
-			while (currentPage <= endPage) {
-				const result = await this.fetchPaginatedData<ProducerData>(
-					`${this.baseUrl}/producers`,
-					(data) => this.processProducerPageBetween(data, startId, endId),
-					currentPage,
-					true,
-				);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				currentPage++;
+			for (const id of ids) {
+				try {
+					const result = await this.upsertSingle(id);
+					totalResult.inserted += result.inserted;
+					totalResult.updated += result.updated;
+					totalResult.skipped += result.skipped;
+					totalResult.errors += result.errors;
+					totalResult.ids.push(...result.ids);
+				} catch (error) {
+					totalResult.errors++;
+					console.error(`Error processing producer ID ${id}:`, {
+						id,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
+				}
+				this.operationProgress.processed++;
+				this.operationProgress.inserted = totalResult.inserted;
+				this.operationProgress.updated = totalResult.updated;
+				this.operationProgress.skipped = totalResult.skipped;
+				this.operationProgress.errors = totalResult.errors;
+				this.updateProgress(this.operationProgress.processed);
 			}
 			return totalResult;
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to insert producers between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateSingle(id: number): Promise<DatabaseOperationResult> {
-		try {
-			return await this.processProducerId(id, true);
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update single producer ${id}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateRange(startId = 1): Promise<DatabaseOperationResult> {
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			return await this.fetchPaginatedData<ProducerData>(
-				`${this.baseUrl}/producers`,
-				(data) => this.processProducerPageRange(data, startId, true),
-				startPage,
-				false,
-			);
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update producer range starting from ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
-		}
-	}
-
-	async updateBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const startPage =
-			Math.floor((startId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		const endPage = Math.floor((endId - 1) / BaseFetcher.ITEMS_PER_PAGE) + 1;
-		try {
-			let currentPage = startPage;
-			const totalResult = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
-			while (currentPage <= endPage) {
-				const result = await this.fetchPaginatedData<ProducerData>(
-					`${this.baseUrl}/producers`,
-					(data) => this.processProducerPageBetween(data, startId, endId, true),
-					currentPage,
-					true,
-				);
-				totalResult.inserted += result.inserted;
-				totalResult.updated += result.updated;
-				totalResult.skipped += result.skipped;
-				totalResult.errors += result.errors;
-				currentPage++;
-			}
-			return totalResult;
-		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to update producers between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+		} finally {
+			this.stopProgress();
 		}
 	}
 
 	private async processProducerId(
 		id: number,
-		forceUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		try {
 			const data = await this.fetchJson<JikanResponse<ProducerData>>(
@@ -186,21 +101,23 @@ export class ProducersFetcher extends BaseFetcher {
 			);
 
 			if (!data || !data.data) {
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
+				return { inserted: 0, updated: 0, skipped: 1, errors: 0, ids: [] };
 			}
 
-			return await this.insertOrUpdateProducer(data.data, forceUpdate);
+			return await this.upsertProducer(data.data);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			return { inserted: 0, updated: 0, skipped: 0, errors: 1 };
+			console.error(`❌ FETCH ERROR: Failed to fetch data for producer ${id}`, {
+				entityType: "producer",
+				entityId: id,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
-	private async insertOrUpdateProducer(
+	private async upsertProducer(
 		producerData: ProducerData,
-		forceUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		try {
 			const mappedData: NewProducer =
@@ -210,53 +127,65 @@ export class ProducersFetcher extends BaseFetcher {
 				producerData.mal_id,
 			);
 
-			if (existingProducer) {
-				if (forceUpdate) {
-					await AnimeProducerRepository.update(producerData.mal_id, mappedData);
-					return { inserted: 0, updated: 1, skipped: 0, errors: 0 };
-				}
-				return { inserted: 0, updated: 0, skipped: 1, errors: 0 };
-			}
+			const upsertedProducer = await AnimeProducerRepository.upsert(mappedData);
 
-			await AnimeProducerRepository.insert(mappedData);
-			return { inserted: 1, updated: 0, skipped: 0, errors: 0 };
+			if (existingProducer) {
+				return {
+					inserted: 0,
+					updated: 1,
+					skipped: 0,
+					errors: 0,
+					ids: [upsertedProducer.id],
+				};
+			}
+			return {
+				inserted: 1,
+				updated: 0,
+				skipped: 0,
+				errors: 0,
+				ids: [upsertedProducer.id],
+			};
 		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to insert/update producer ${producerData.mal_id}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to upsert producer ${producerData.mal_id}`,
+				{
+					entityType: "producer",
+					entityId: producerData.mal_id,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
 	private async processProducerPageFiltered(
 		data: JikanResponse<ProducerData[]>,
 		filter: (mal_id: number) => boolean,
-		isUpdate = false,
 	): Promise<DatabaseOperationResult> {
 		const result: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 		for (const producerData of data.data) {
 			if (filter(producerData.mal_id)) {
 				try {
-					const itemResult = await this.insertOrUpdateProducer(
-						producerData,
-						isUpdate,
-					);
+					const itemResult = await this.upsertProducer(producerData);
 					result.inserted += itemResult.inserted;
 					result.updated += itemResult.updated;
 					result.skipped += itemResult.skipped;
 					result.errors += itemResult.errors;
+					result.ids.push(...itemResult.ids);
 				} catch (error) {
 					result.errors++;
-					console.warn(
-						`Error processing producer ${producerData.mal_id}:`,
-						error,
-					);
+					console.error(`Error processing producer ${producerData.mal_id}:`, {
+						id: producerData.mal_id,
+						error: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+					});
 				}
 			}
 		}
@@ -266,25 +195,10 @@ export class ProducersFetcher extends BaseFetcher {
 	private async processProducerPageRange(
 		data: JikanResponse<ProducerData[]>,
 		startId: number,
-		isUpdate = false,
 	): Promise<DatabaseOperationResult> {
 		return this.processProducerPageFiltered(
 			data,
 			(mal_id) => mal_id >= startId,
-			isUpdate,
-		);
-	}
-
-	private async processProducerPageBetween(
-		data: JikanResponse<ProducerData[]>,
-		startId: number,
-		endId: number,
-		isUpdate = false,
-	): Promise<DatabaseOperationResult> {
-		return this.processProducerPageFiltered(
-			data,
-			(mal_id) => mal_id >= startId && mal_id <= endId,
-			isUpdate,
 		);
 	}
 }

@@ -2,7 +2,7 @@ import AnimeEpisodeRepository from "@trackyrs/database/repositories/myanimelist/
 import AnimeRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-repository";
 import type { NewAnimeEpisode } from "@trackyrs/database/schemas/myanimelist/anime/anime-episode-schema";
 import { BaseFetcher } from "@/base-fetcher";
-import { FetcherError, FetcherErrorType } from "@/fetcher-error";
+import { AnimeFetcher } from "@/fetchers/anime-fetcher";
 import { AnimeMapper } from "@/mappers/anime-mapper";
 import type {
 	AnimeEpisodesResponse,
@@ -11,114 +11,100 @@ import type {
 } from "@/types";
 
 export class AnimeEpisodesFetcher extends BaseFetcher {
-	async insertAll(): Promise<DatabaseOperationResult> {
-		return this.insertRange(1);
+	async upsertAll(): Promise<DatabaseOperationResult> {
+		return this.upsertRange(1);
 	}
 
-	async updateAll(): Promise<DatabaseOperationResult> {
-		return this.updateRange(1);
-	}
-
-	async insertSingle(animeId: number): Promise<DatabaseOperationResult> {
-		return this.processSingleAnime(animeId, false);
-	}
-
-	async updateSingle(animeId: number): Promise<DatabaseOperationResult> {
-		return this.processSingleAnime(animeId, true);
-	}
-
-	async insertRange(startId?: number): Promise<DatabaseOperationResult> {
-		const animeIds = await this.getAnimeIdsFromRange(startId);
-		return this.processAnimeIdList(animeIds, false);
-	}
-
-	async updateRange(startId?: number): Promise<DatabaseOperationResult> {
-		const animeIds = await this.getAnimeIdsFromRange(startId);
-		return this.processAnimeIdList(animeIds, true);
-	}
-
-	async insertBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const animeIds = await this.getAnimeIdsBetween(startId, endId);
-		return this.processAnimeIdList(animeIds, false);
-	}
-
-	async updateBetween(
-		startId: number,
-		endId: number,
-	): Promise<DatabaseOperationResult> {
-		if (startId > endId) {
-			throw new FetcherError(
-				FetcherErrorType.VALIDATION_ERROR,
-				`Start ID (${startId}) cannot be greater than end ID (${endId})`,
-			);
-		}
-		const animeIds = await this.getAnimeIdsBetween(startId, endId);
-		return this.processAnimeIdList(animeIds, true);
-	}
-
-	async insertFromList(ids: number[]): Promise<DatabaseOperationResult> {
-		return this.processAnimeIdList(ids, false);
-	}
-
-	async updateFromList(ids: number[]): Promise<DatabaseOperationResult> {
-		return this.processAnimeIdList(ids, true);
-	}
-
-	private async processSingleAnime(
-		animeId: number,
-		isUpdate: boolean,
-	): Promise<DatabaseOperationResult> {
+	async upsertSingle(animeId: number): Promise<DatabaseOperationResult> {
 		try {
-			return await this.processAnimeEpisodes(animeId, isUpdate);
+			return await this.processAnimeEpisodes(animeId);
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			throw new FetcherError(
-				FetcherErrorType.UNKNOWN_ERROR,
-				`Failed to ${isUpdate ? "update" : "insert"} episodes for anime ${animeId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			this.stopProgress();
+			console.error(`❌ Failed to upsert episodes for anime ${animeId}`, {
+				entityType: "anime-episodes",
+				entityId: animeId,
+				error: error instanceof Error ? error.message : String(error),
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
+	}
+
+	async upsertRange(startId?: number): Promise<DatabaseOperationResult> {
+		try {
+			const animeIds = await this.getAnimeIdsFromRange(startId);
+			return this.upsertFromList(animeIds);
+		} catch (error) {
+			this.stopProgress();
+			console.error(
+				`❌ Failed to upsert episodes for anime range starting from ${startId}`,
+				{
+					entityType: "anime-episodes",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
+			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
+		}
+	}
+
+	async upsertFromList(ids: number[]): Promise<DatabaseOperationResult> {
+		return this.processAnimeIdList(ids);
 	}
 
 	private async processAnimeIdList(
 		animeIds: number[],
-		isUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		if (animeIds.length === 0) {
-			return { inserted: 0, updated: 0, skipped: 0, errors: 0 };
+			return { inserted: 0, updated: 0, skipped: 0, errors: 0, ids: [] };
 		}
 		this.resetProgress();
-		this.operationProgress.total = animeIds.length;
-		this.progressBar.start(animeIds.length, 0);
+		this.startProgress(animeIds.length);
 
 		const totalResult: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
 		for (const animeId of animeIds) {
 			try {
-				const result = await this.processAnimeEpisodes(animeId, isUpdate);
+				const existingAnime = await AnimeRepository.findById(animeId);
+				if (!existingAnime) {
+					try {
+						const childProgressName = this.createChildProgress(
+							`Anime (${animeId})`,
+							1,
+						);
+						const animeFetcher = new AnimeFetcher(childProgressName);
+						await animeFetcher.upsertSingle(animeId);
+						this.removeChildProgress(childProgressName);
+					} catch (error) {
+						console.warn(
+							`Failed to fetch missing anime ${animeId} for episodes:`,
+							error,
+						);
+						totalResult.errors++;
+						continue; // Skip processing episodes if we can't fetch the anime
+					}
+				}
+
+				const result = await this.processAnimeEpisodes(animeId);
 				totalResult.inserted += result.inserted;
 				totalResult.updated += result.updated;
 				totalResult.skipped += result.skipped;
 				totalResult.errors += result.errors;
+				totalResult.ids.push(...result.ids);
 			} catch (error) {
 				totalResult.errors++;
-				console.warn(`Error processing episodes for anime ${animeId}:`, error);
+				console.error(`Error processing episodes for anime ID ${animeId}:`, {
+					id: animeId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				});
 			}
 
 			this.operationProgress.processed++;
@@ -126,16 +112,15 @@ export class AnimeEpisodesFetcher extends BaseFetcher {
 			this.operationProgress.updated = totalResult.updated;
 			this.operationProgress.skipped = totalResult.skipped;
 			this.operationProgress.errors = totalResult.errors;
-			this.progressBar.update(this.operationProgress.processed);
+			this.updateProgress(this.operationProgress.processed);
 		}
 
-		this.progressBar.stop();
+		this.stopProgress();
 		return totalResult;
 	}
 
 	private async processAnimeEpisodes(
 		animeId: number,
-		isUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		try {
 			let currentPage = 1;
@@ -145,6 +130,7 @@ export class AnimeEpisodesFetcher extends BaseFetcher {
 				updated: 0,
 				skipped: 0,
 				errors: 0,
+				ids: [],
 			};
 
 			while (hasNextPage) {
@@ -164,13 +150,13 @@ export class AnimeEpisodesFetcher extends BaseFetcher {
 				const pageResult = await this.processEpisodesPage(
 					animeId,
 					episodesData.data,
-					isUpdate,
 				);
 
 				totalResult.inserted += pageResult.inserted;
 				totalResult.updated += pageResult.updated;
 				totalResult.skipped += pageResult.skipped;
 				totalResult.errors += pageResult.errors;
+				totalResult.ids.push(...pageResult.ids);
 
 				hasNextPage = episodesData.pagination?.has_next_page === true;
 				currentPage++;
@@ -178,53 +164,37 @@ export class AnimeEpisodesFetcher extends BaseFetcher {
 
 			return totalResult;
 		} catch (error) {
-			if (error instanceof FetcherError) {
-				throw error;
-			}
-			return { inserted: 0, updated: 0, skipped: 0, errors: 1 };
+			console.error(
+				`❌ FETCH ERROR: Failed to fetch episodes data for anime ${animeId}`,
+				{
+					entityType: "anime-episodes",
+					entityId: animeId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
+			);
+			return { inserted: 0, updated: 0, skipped: 0, errors: 1, ids: [] };
 		}
 	}
 
 	private async processEpisodesPage(
 		animeId: number,
 		episodes: EpisodeData[],
-		isUpdate: boolean,
 	): Promise<DatabaseOperationResult> {
 		const result: DatabaseOperationResult = {
 			inserted: 0,
 			updated: 0,
 			skipped: 0,
 			errors: 0,
+			ids: [],
 		};
 
-		const episodesToInsert: NewAnimeEpisode[] = [];
-		const episodesToUpdate: Array<{
-			episodeNumber: number;
-			data: Partial<NewAnimeEpisode>;
-		}> = [];
+		const episodesToUpsert: NewAnimeEpisode[] = [];
 
 		for (const episodeData of episodes) {
 			try {
 				const mappedEpisode = AnimeMapper.mapEpisodeData(animeId, episodeData);
-
-				const existingEpisode =
-					await AnimeEpisodeRepository.findByAnimeIdAndEpisodeNumber(
-						animeId,
-						episodeData.mal_id,
-					);
-
-				if (existingEpisode) {
-					if (isUpdate) {
-						episodesToUpdate.push({
-							episodeNumber: episodeData.mal_id,
-							data: mappedEpisode,
-						});
-					} else {
-						result.skipped++;
-					}
-				} else {
-					episodesToInsert.push(mappedEpisode);
-				}
+				episodesToUpsert.push(mappedEpisode);
 			} catch (error) {
 				result.errors++;
 				console.warn(
@@ -234,28 +204,36 @@ export class AnimeEpisodesFetcher extends BaseFetcher {
 			}
 		}
 
-		if (episodesToInsert.length > 0) {
+		if (episodesToUpsert.length > 0) {
 			try {
-				const insertResult =
-					await AnimeEpisodeRepository.insertMany(episodesToInsert);
-				result.inserted += insertResult.rowCount || 0;
-			} catch (error) {
-				result.errors += episodesToInsert.length;
-				console.warn(
-					`Error batch inserting episodes for anime ${animeId}:`,
-					error,
-				);
-			}
-		}
+				const existingEpisodes = new Set<string>();
+				for (const episode of episodesToUpsert) {
+					const exists = await AnimeEpisodeRepository.exists(
+						episode.animeId,
+						episode.episodeNumber,
+					);
+					if (exists) {
+						existingEpisodes.add(`${episode.animeId}-${episode.episodeNumber}`);
+					}
+				}
 
-		for (const { episodeNumber, data } of episodesToUpdate) {
-			try {
-				await AnimeEpisodeRepository.update(animeId, episodeNumber, data);
-				result.updated++;
+				const upsertedEpisodes =
+					await AnimeEpisodeRepository.upsertMany(episodesToUpsert);
+
+				for (const episode of episodesToUpsert) {
+					const key = `${episode.animeId}-${episode.episodeNumber}`;
+					if (existingEpisodes.has(key)) {
+						result.updated++;
+					} else {
+						result.inserted++;
+					}
+				}
+
+				result.ids.push(...upsertedEpisodes.map((ep) => ep.id));
 			} catch (error) {
-				result.errors++;
+				result.errors += episodesToUpsert.length;
 				console.warn(
-					`Error updating episode ${episodeNumber} for anime ${animeId}:`,
+					`Error batch upserting episodes for anime ${animeId}:`,
 					error,
 				);
 			}
@@ -268,26 +246,16 @@ export class AnimeEpisodesFetcher extends BaseFetcher {
 		try {
 			return await AnimeRepository.findIdsFromRange(startId);
 		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to get anime IDs from range starting at ${startId}`,
-				error instanceof Error ? error : new Error(String(error)),
+			console.error(
+				`❌ DATABASE_ERROR: Failed to get anime IDs from range starting at ${startId}`,
+				{
+					entityType: "anime-episodes",
+					startId,
+					error: error instanceof Error ? error.message : String(error),
+					stack: error instanceof Error ? error.stack : undefined,
+				},
 			);
-		}
-	}
-
-	private async getAnimeIdsBetween(
-		startId: number,
-		endId: number,
-	): Promise<number[]> {
-		try {
-			return await AnimeRepository.findIdsBetween(startId, endId);
-		} catch (error) {
-			throw new FetcherError(
-				FetcherErrorType.DATABASE_ERROR,
-				`Failed to get anime IDs between ${startId} and ${endId}`,
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			return [];
 		}
 	}
 }
