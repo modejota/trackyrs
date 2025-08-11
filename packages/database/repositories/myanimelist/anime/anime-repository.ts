@@ -1,7 +1,8 @@
-import { and, eq, gte, lte } from "drizzle-orm";
-
-import { animeTable, database } from "@/index";
+import { asc, eq, gte, sql } from "drizzle-orm";
+import { database } from "@/index";
+import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
 import type { Anime, NewAnime } from "@/schemas/myanimelist/anime/anime-schema";
+import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 
 export default class AnimeRepository {
 	static async findById(id: number) {
@@ -11,6 +12,33 @@ export default class AnimeRepository {
 			.where(eq(animeTable.id, id))
 			.limit(1);
 		return result[0];
+	}
+
+	static async getAnimeWithRelations(id: number) {
+		const result = await database.query.animeTable.findFirst({
+			where: eq(animeTable.id, id),
+			with: {
+				genres: { with: { genre: true } },
+				episodes: { orderBy: asc(animeEpisodeTable.episodeNumber) },
+				characters: {
+					with: { character: true },
+					orderBy: sql`CASE WHEN role = 'Main' THEN 0 ELSE 1 END`,
+				},
+				staff: { with: { people: true } },
+			},
+		});
+
+		if (!result) return null;
+
+		const { genres, episodes, characters, staff, ...anime } = result;
+
+		return {
+			anime,
+			genres,
+			episodes,
+			characters,
+			staff,
+		};
 	}
 
 	static async insert(anime: NewAnime) {
