@@ -11,6 +11,7 @@ import {
 import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
 import { animeToCharacterTable } from "@/schemas/myanimelist/anime/anime-to-character-schema";
 import { animeToGenreTable } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
+import { animeToPeopleTable } from "@/schemas/myanimelist/anime/anime-to-people-schema";
 import { animeToProducersTable } from "@/schemas/myanimelist/anime/anime-to-producers-schema";
 
 export enum AnimeType {
@@ -133,6 +134,7 @@ export const animeRelations = relations(animeTable, ({ many }) => ({
 	genres: many(animeToGenreTable),
 	producers: many(animeToProducersTable),
 	characters: many(animeToCharacterTable),
+	staff: many(animeToPeopleTable),
 }));
 
 export type Anime = typeof animeTable.$inferSelect;

@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { integer, jsonb, pgTable, serial, unique } from "drizzle-orm/pg-core";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
 import { peopleTable } from "@/schemas/myanimelist/people-schema";
@@ -15,6 +16,20 @@ export const animeToPeopleTable = pgTable(
 		positions: jsonb("positions").notNull().$type<string[]>(),
 	},
 	(table) => [unique().on(table.animeId, table.peopleId, table.positions)],
+);
+
+export const animeToPeopleRelations = relations(
+	animeToPeopleTable,
+	({ one }) => ({
+		anime: one(animeTable, {
+			fields: [animeToPeopleTable.animeId],
+			references: [animeTable.id],
+		}),
+		people: one(peopleTable, {
+			fields: [animeToPeopleTable.peopleId],
+			references: [peopleTable.id],
+		}),
+	}),
 );
 
 export type AnimeToPeople = typeof animeToPeopleTable.$inferSelect;
