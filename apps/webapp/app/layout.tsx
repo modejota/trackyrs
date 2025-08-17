@@ -4,6 +4,8 @@ import "@trackyrs/ui/globals.css";
 import { Toaster } from "@trackyrs/ui/components/sonner";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Navbar } from "@/components/navbar/navbar";
+import Providers from "@/providers";
 
 const geistSans = localFont({
 	src: "./fonts/GeistVF.woff",
@@ -27,7 +29,8 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
-				{children}
+				<Navbar />
+				<Providers>{children}</Providers>
 				<Toaster />
 			</body>
 		</html>
