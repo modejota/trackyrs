@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@trackyrs/ui/components/card";
 import { Skeleton } from "@trackyrs/ui/components/skeleton";
 
-export function AnimeHeroSkeleton() {
+export function AnimeOrMangaHeroSkeleton() {
 	return (
 		<div className="flex flex-col lg:flex-row">
 			{/* Image Section */}
@@ -53,7 +53,7 @@ export function AnimeHeroSkeleton() {
 	);
 }
 
-export function AnimeInfoSkeleton() {
+export function AnimeOrMangaInfoSkeleton() {
 	return (
 		<div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
 			{["card-1", "card-2", "card-3", "card-4", "card-5", "card-6"].map(
@@ -80,7 +80,7 @@ export function AnimeInfoSkeleton() {
 	);
 }
 
-export function AnimeTabsSkeleton() {
+export function AnimeOrMangaTabsSkeleton() {
 	return (
 		<section className="space-y-6">
 			<div className="w-full">
@@ -130,7 +130,7 @@ export function AnimeTabsSkeleton() {
 	);
 }
 
-export function AnimeInformationSkeleton() {
+export function AnimeOrMangaInformationSkeleton() {
 	return (
 		<section className="w-full rounded-lg border bg-card p-6">
 			<Skeleton className="mb-4 h-6 w-32" />
