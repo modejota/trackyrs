@@ -1,7 +1,9 @@
 import type { NewAnime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
-import type { AnimeGenreRole } from "@trackyrs/database/schemas/myanimelist/anime/anime-to-genre-schema";
-import type { AnimeProducerRole } from "@trackyrs/database/schemas/myanimelist/anime/anime-to-producers-schema";
 import type { NewCharacterToPeople } from "@trackyrs/database/schemas/myanimelist/character/character-to-people-schema";
+import type {
+	AnimeGenreRole,
+	AnimeProducerRole,
+} from "@trackyrs/database/types/anime-with-relations";
 import type {
 	AnimeCharacterData,
 	AnimeData,
@@ -41,6 +43,8 @@ export class AnimeMapper {
 			theme: data.theme ? [data.theme] : [],
 			external: data.external || [],
 			streaming: data.streaming || [],
+			referenceScore: data.score,
+			referenceScoredBy: data.scored_by,
 		};
 	}
 

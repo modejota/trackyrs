@@ -1,13 +1,7 @@
+import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
 import { mangaGenreTable } from "@/schemas/myanimelist/manga/manga-genre-schema";
 import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
-
-export enum MangaGenreRole {
-	GENRES = "Genres",
-	EXPLICIT_GENRES = "Explicit Genres",
-	THEMES = "Themes",
-	DEMOGRAPHICS = "Demographics",
-}
 
 export const mangaToGenreTable = pgTable(
 	"manga_to_genre",
@@ -22,6 +16,20 @@ export const mangaToGenreTable = pgTable(
 		role: varchar("role", { length: 16 }).notNull(),
 	},
 	(table) => [unique().on(table.mangaId, table.genreId, table.role)],
+);
+
+export const mangaToGenreRelations = relations(
+	mangaToGenreTable,
+	({ one }) => ({
+		manga: one(mangaTable, {
+			fields: [mangaToGenreTable.mangaId],
+			references: [mangaTable.id],
+		}),
+		genre: one(mangaGenreTable, {
+			fields: [mangaToGenreTable.genreId],
+			references: [mangaGenreTable.id],
+		}),
+	}),
 );
 
 export type MangaToGenre = typeof mangaToGenreTable.$inferSelect;

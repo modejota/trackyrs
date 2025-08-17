@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique } from "drizzle-orm/pg-core";
 import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
 import { peopleTable } from "@/schemas/myanimelist/people-schema";
@@ -14,6 +15,20 @@ export const mangaToPeopleTable = pgTable(
 			.references(() => peopleTable.id),
 	},
 	(table) => [unique().on(table.mangaId, table.peopleId)],
+);
+
+export const mangaToPeopleRelations = relations(
+	mangaToPeopleTable,
+	({ one }) => ({
+		manga: one(mangaTable, {
+			fields: [mangaToPeopleTable.mangaId],
+			references: [mangaTable.id],
+		}),
+		people: one(peopleTable, {
+			fields: [mangaToPeopleTable.peopleId],
+			references: [peopleTable.id],
+		}),
+	}),
 );
 
 export type MangaToPeople = typeof mangaToPeopleTable.$inferSelect;

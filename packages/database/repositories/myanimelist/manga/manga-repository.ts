@@ -1,6 +1,6 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { eq, gte, sql } from "drizzle-orm";
 import { database, mangaTable } from "@/index";
-import type { Manga, NewManga } from "@/schemas";
+import type { Manga, NewManga } from "@/schemas/myanimelist/manga/manga-schema";
 
 export default class MangaRepository {
 	static async findById(id: number) {
@@ -10,6 +10,33 @@ export default class MangaRepository {
 			.where(eq(mangaTable.id, id))
 			.limit(1);
 		return result[0];
+	}
+
+	static async findByIdWithRelations(id: number) {
+		const result = await database.query.mangaTable.findFirst({
+			where: eq(mangaTable.id, id),
+			with: {
+				genres: { with: { genre: true } },
+				magazines: { with: { magazine: true } },
+				characters: {
+					with: { character: true },
+					orderBy: sql`CASE WHEN role = 'Main' THEN 0 ELSE 1 END`,
+				},
+				staff: { with: { people: true } },
+			},
+		});
+
+		if (!result) return null;
+
+		const { genres, magazines, characters, staff, ...manga } = result;
+
+		return {
+			manga,
+			genres,
+			magazines,
+			characters,
+			staff,
+		};
 	}
 
 	static async insert(manga: NewManga) {

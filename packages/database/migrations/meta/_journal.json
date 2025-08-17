@@ -29,6 +29,13 @@
 			"when": 1753889307443,
 			"tag": "0003_sloppy_giant_girl",
 			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1755421498934,
+			"tag": "0004_nappy_guardsmen",
+			"breakpoints": true
 		}
 	]
 }

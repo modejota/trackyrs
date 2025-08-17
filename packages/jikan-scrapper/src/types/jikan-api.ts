@@ -3,7 +3,6 @@
  * These types represent data received from the Jikan API
  */
 
-import type { ProducerTitlesInfo } from "@trackyrs/database/schemas/myanimelist/anime/anime-producer-schema";
 import type {
 	AnimeExternalLink,
 	AnimeStatus,
@@ -11,13 +10,14 @@ import type {
 	AnimeTitleInfo,
 	AnimeType,
 	DaysOfWeekNullable,
+	ProducerTitlesInfo,
 	Rating,
 	SeasonNullable,
-} from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
+} from "@trackyrs/database/types/anime-with-relations";
 import type {
 	MangaStatus,
 	MangaType,
-} from "@trackyrs/database/schemas/myanimelist/manga/manga-schema";
+} from "@trackyrs/database/types/manga-with-relations";
 
 export interface AnimeData {
 	mal_id: number;

@@ -2,12 +2,7 @@ import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
 import { animeProducersTable } from "@/schemas/myanimelist/anime/anime-producer-schema";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
-
-export enum AnimeProducerRole {
-	PRODUCER = "Producer",
-	LICENSOR = "Licensor",
-	STUDIO = "Studio",
-}
+import type { AnimeProducerRole } from "@/types/anime-with-relations";
 
 export const animeToProducersTable = pgTable(
 	"anime_to_producers",

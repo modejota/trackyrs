@@ -1,8 +1,8 @@
+import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
 import { characterTable } from "@/schemas/myanimelist/character/character-schema";
 import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
-
-export type MangaCharacterRole = "Main" | "Supporting";
+import type { MangaCharacterRole } from "@/types/manga-with-relations";
 
 export const mangaToCharacterTable = pgTable(
 	"manga_to_character",
@@ -17,6 +17,20 @@ export const mangaToCharacterTable = pgTable(
 		role: varchar("role", { length: 12 }).notNull().$type<MangaCharacterRole>(),
 	},
 	(table) => [unique().on(table.mangaId, table.characterId, table.role)],
+);
+
+export const mangaToCharacterRelations = relations(
+	mangaToCharacterTable,
+	({ one }) => ({
+		manga: one(mangaTable, {
+			fields: [mangaToCharacterTable.mangaId],
+			references: [mangaTable.id],
+		}),
+		character: one(characterTable, {
+			fields: [mangaToCharacterTable.characterId],
+			references: [characterTable.id],
+		}),
+	}),
 );
 
 export type MangaToCharacter = typeof mangaToCharacterTable.$inferSelect;

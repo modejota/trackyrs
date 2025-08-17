@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique } from "drizzle-orm/pg-core";
 import { mangaMagazineTable } from "@/schemas/myanimelist/manga/manga-magazine-schema";
 import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
@@ -14,6 +15,20 @@ export const mangaToMagazineTable = pgTable(
 			.references(() => mangaMagazineTable.id, { onDelete: "cascade" }),
 	},
 	(table) => [unique().on(table.mangaId, table.magazineId)],
+);
+
+export const mangaToMagazineRelations = relations(
+	mangaToMagazineTable,
+	({ one }) => ({
+		manga: one(mangaTable, {
+			fields: [mangaToMagazineTable.mangaId],
+			references: [mangaTable.id],
+		}),
+		magazine: one(mangaMagazineTable, {
+			fields: [mangaToMagazineTable.magazineId],
+			references: [mangaMagazineTable.id],
+		}),
+	}),
 );
 
 export type MangaToMagazine = typeof mangaToMagazineTable.$inferSelect;

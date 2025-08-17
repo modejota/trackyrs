@@ -1,36 +1,23 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	integer,
 	jsonb,
 	pgTable,
+	real,
 	text,
 	timestamp,
 	varchar,
 } from "drizzle-orm/pg-core";
-
-export enum MangaType {
-	MANGA = "Manga",
-	NOVEL = "Novel",
-	LIGHT_NOVEL = "Light Novel",
-	ONE_SHOT = "One-shot",
-	DOUJINSHI = "Doujinshi",
-	MANHWA = "Manhwa",
-	MANHUA = "Manhua",
-}
-
-export enum MangaStatus {
-	FINISHED = "Finished",
-	PUBLISHING = "Publishing",
-	ON_HIATUS = "On Hiatus",
-	DISCONTINUED = "Discontinued",
-	NOT_YET_PUBLISHED = "Not yet published",
-}
-
-export interface TitleInfo {
-	type: string;
-	title: string;
-}
+import { mangaToCharacterTable } from "@/schemas/myanimelist/manga/manga-to-character-schema";
+import { mangaToGenreTable } from "@/schemas/myanimelist/manga/manga-to-genre-schema";
+import { mangaToMagazineTable } from "@/schemas/myanimelist/manga/manga-to-magazine-schema";
+import { mangaToPeopleTable } from "@/schemas/myanimelist/manga/manga-to-people-schema";
+import type {
+	MangaStatus,
+	MangaType,
+	TitleInfo,
+} from "@/types/manga-with-relations";
 
 export const mangaTable = pgTable("mangas", {
 	id: integer("id").primaryKey(),
@@ -61,7 +48,16 @@ export const mangaTable = pgTable("mangas", {
 	external: jsonb("external")
 		.$type<Array<Record<string, string>>>()
 		.default(sql`'[]'::jsonb`),
+	referenceScore: real("reference_score").default(0),
+	referenceScoredBy: integer("reference_scored_by").default(0),
 });
+
+export const mangaRelations = relations(mangaTable, ({ many }) => ({
+	genres: many(mangaToGenreTable),
+	magazines: many(mangaToMagazineTable),
+	characters: many(mangaToCharacterTable),
+	staff: many(mangaToPeopleTable),
+}));
 
 export type Manga = typeof mangaTable.$inferSelect;
 export type NewManga = typeof mangaTable.$inferInsert;

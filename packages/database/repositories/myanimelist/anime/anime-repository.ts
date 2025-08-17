@@ -1,8 +1,9 @@
-import { asc, eq, gte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import { database } from "@/index";
 import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
 import type { Anime, NewAnime } from "@/schemas/myanimelist/anime/anime-schema";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
+import type { SeasonNullable } from "@/types/anime-with-relations";
 
 export default class AnimeRepository {
 	static async findById(id: number) {
@@ -14,7 +15,7 @@ export default class AnimeRepository {
 		return result[0];
 	}
 
-	static async getAnimeWithRelations(id: number) {
+	static async findByIdWithRelations(id: number) {
 		const result = await database.query.animeTable.findFirst({
 			where: eq(animeTable.id, id),
 			with: {
@@ -88,5 +89,30 @@ export default class AnimeRepository {
 			.orderBy(animeTable.id);
 
 		return result.map((row) => row.id);
+	}
+
+	static async findBySeason(season: SeasonNullable, year: number | null) {
+		const seasonCondition =
+			season === null
+				? isNull(animeTable.season)
+				: eq(animeTable.season, season);
+
+		const yearCondition =
+			year === null ? isNull(animeTable.year) : eq(animeTable.year, year);
+
+		return await database
+			.select()
+			.from(animeTable)
+			.where(and(seasonCondition, yearCondition))
+			.orderBy(animeTable.title);
+	}
+
+	static async findDistinctYears() {
+		const result = await database
+			.selectDistinctOn([animeTable.year])
+			.from(animeTable)
+			.orderBy(desc(animeTable.year));
+
+		return result.map((row) => row.year);
 	}
 }

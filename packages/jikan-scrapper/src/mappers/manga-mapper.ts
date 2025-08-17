@@ -1,10 +1,8 @@
 import type { NewManga } from "@trackyrs/database/schemas/myanimelist/manga/manga-schema";
-import {
-	MangaGenreRole,
-	type NewMangaToGenre,
-} from "@trackyrs/database/schemas/myanimelist/manga/manga-to-genre-schema";
+import type { NewMangaToGenre } from "@trackyrs/database/schemas/myanimelist/manga/manga-to-genre-schema";
 import type { NewMangaToMagazine } from "@trackyrs/database/schemas/myanimelist/manga/manga-to-magazine-schema";
 import type { NewMangaToPeople } from "@trackyrs/database/schemas/myanimelist/manga/manga-to-people-schema";
+import { MangaGenreRole } from "@trackyrs/database/types/manga-with-relations";
 import type { MangaCharacterData, MangaData } from "@/types";
 import { ImageProcessor } from "@/utils/image-processor";
 
@@ -28,6 +26,8 @@ export class MangaMapper {
 			publishingTo: data.published.to,
 			synopsis: data.synopsis,
 			background: data.background,
+			referenceScore: data.score,
+			referenceScoredBy: data.scored_by,
 		};
 	}
 
