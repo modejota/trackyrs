@@ -5,6 +5,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@trackyrs/ui/components/tooltip";
+import { UsersRound } from "lucide-react";
 import Image from "next/image";
 
 interface StaffGridProps {
@@ -132,34 +133,16 @@ function StaffCard({ data, isMain = false }: StaffCardProps) {
 export function StaffGrid({ staff }: StaffGridProps) {
 	if (!staff || staff.length === 0) {
 		return (
-			<div className="py-12 text-center" aria-live="polite">
-				<div
-					className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-muted"
-					aria-hidden="true"
-				>
-					<svg
-						className="h-12 w-12 text-muted-foreground"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<title>No staff members</title>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M8 6a2 2 0 00-2 2v6.002"
-						/>
-					</svg>
+			<div className="py-12 text-center">
+				<div className="mx-auto max-w-md">
+					<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted p-4">
+						<UsersRound className="h-6 w-6 text-muted-foreground" />
+					</div>
+					<h3 className="mb-2 font-semibold text-lg">No Staff Available</h3>
+					<p className="text-muted-foreground text-sm">
+						There is no staff information available yet.
+					</p>
 				</div>
-				<h3 className="mb-2 font-medium text-base text-muted-foreground sm:text-lg">
-					No Staff Information Available
-				</h3>
-				<p className="mx-auto max-w-md text-muted-foreground text-sm">
-					Staff information is not available for this anime yet. Check back
-					later for updates.
-				</p>
 			</div>
 		);
 	}

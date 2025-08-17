@@ -13,6 +13,7 @@ import type { AnimeEpisode } from "@trackyrs/database/schemas/myanimelist/anime/
 import { Badge } from "@trackyrs/ui/components/badge";
 import { Button } from "@trackyrs/ui/components/button";
 import { Input } from "@trackyrs/ui/components/input";
+import { formatDateToLocaleDateStringOrNotYetAired } from "@trackyrs/utils/src/date-to-string";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
 
@@ -24,24 +25,10 @@ export function EpisodesTable({ episodes }: EpisodesTableProps) {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [globalFilter, setGlobalFilter] = useState("");
 
-	const formatDate = (dateString: string | null) => {
-		if (!dateString) return "Not aired";
-		try {
-			const date = new Date(dateString);
-			return date.toLocaleDateString("en-US", {
-				year: "numeric",
-				month: "short",
-				day: "numeric",
-			});
-		} catch {
-			return "Invalid date";
-		}
-	};
-
 	const columns: ColumnDef<AnimeEpisode>[] = [
 		{
 			accessorKey: "episodeNumber",
-			header: "Episode #",
+			header: "Episode",
 			cell: ({ row }) => (
 				<div className="min-w-[60px] text-center font-medium">
 					{row.getValue("episodeNumber")}
@@ -59,10 +46,10 @@ export function EpisodesTable({ episodes }: EpisodesTableProps) {
 			),
 		},
 		{
-			accessorKey: "titleJapanese",
-			header: "Japanese Title",
+			accessorKey: "titleRomaji",
+			header: "Romaji Title",
 			cell: ({ row }) => {
-				const japaneseTitle = row.getValue("titleJapanese") as string | null;
+				const japaneseTitle = row.getValue("titleRomaji") as string | null;
 				return (
 					<div className="min-w-[150px] text-muted-foreground">
 						{japaneseTitle || "—"}
@@ -74,7 +61,9 @@ export function EpisodesTable({ episodes }: EpisodesTableProps) {
 			accessorKey: "aired",
 			header: "Aired Date",
 			cell: ({ row }) => (
-				<div className="min-w-[100px]">{formatDate(row.getValue("aired"))}</div>
+				<div className="min-w-[100px]">
+					{formatDateToLocaleDateStringOrNotYetAired(row.getValue("aired"))}
+				</div>
 			),
 		},
 		{
@@ -129,7 +118,7 @@ export function EpisodesTable({ episodes }: EpisodesTableProps) {
 	if (episodes.length === 0) {
 		return (
 			<div className="py-12 text-center">
-				<div className="mx-auto max-w-sm">
+				<div className="mx-auto max-w-md">
 					<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted p-4">
 						<Search className="h-6 w-6 text-muted-foreground" />
 					</div>

@@ -1,4 +1,10 @@
 import type { Anime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
+import {
+	convertBroadcastDayAndTimeToString,
+	convertSecondsDurationToString,
+	formatDateToLocaleDateStringOrUnknown,
+	formatSeasonAndYearToString,
+} from "@trackyrs/utils/src/date-to-string";
 
 interface AnimeInformationSectionProps {
 	anime: Anime;
@@ -7,38 +13,6 @@ interface AnimeInformationSectionProps {
 export function AnimeInformationSection({
 	anime,
 }: AnimeInformationSectionProps) {
-	const formatDuration = (seconds: number | null) => {
-		if (!seconds) return "Unknown";
-		const minutes = Math.floor(seconds / 60);
-		if (minutes < 60) return `${minutes} minutes`;
-		const hours = Math.floor(minutes / 60);
-		const remainingMinutes = minutes % 60;
-		return remainingMinutes > 0
-			? `${hours} hours ${remainingMinutes} minutes`
-			: `${hours} hours`;
-	};
-
-	const formatDate = (dateString: string | null) => {
-		if (!dateString) return "Unknown";
-		return new Date(dateString).toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		});
-	};
-
-	const formatSeason = (season: string | null, year: number | null) => {
-		if (!season || !year) return "Unknown";
-		const seasonName = season.charAt(0).toUpperCase() + season.slice(1);
-		return `${seasonName} ${year}`;
-	};
-
-	const formatBroadcast = (day: string | null, time: string | null) => {
-		if (!day && !time) return "Unknown";
-		if (day && time) return `${day} at ${time}`;
-		return day || time || "Unknown";
-	};
-
 	return (
 		<section
 			className="w-full rounded-lg border bg-card p-6"
@@ -81,7 +55,7 @@ export function AnimeInformationSection({
 						Duration
 					</h3>
 					<p className="text-base text-foreground/70">
-						{formatDuration(anime.duration)}
+						{convertSecondsDurationToString(anime.duration)}
 					</p>
 				</div>
 
@@ -102,8 +76,13 @@ export function AnimeInformationSection({
 							Aired
 						</h3>
 						<p className="text-base text-foreground/70">
-							{anime.airedFrom ? formatDate(anime.airedFrom) : "?"} -{" "}
-							{anime.airedTo ? formatDate(anime.airedTo) : "?"}
+							{anime.airedFrom
+								? formatDateToLocaleDateStringOrUnknown(anime.airedFrom)
+								: "?"}{" "}
+							-{" "}
+							{anime.airedTo
+								? formatDateToLocaleDateStringOrUnknown(anime.airedTo)
+								: "?"}
 						</p>
 					</div>
 				)}
@@ -115,7 +94,7 @@ export function AnimeInformationSection({
 							Season
 						</h3>
 						<p className="text-base text-foreground/70">
-							{formatSeason(anime.season, anime.year)}
+							{formatSeasonAndYearToString(anime.season, anime.year)}
 						</p>
 					</div>
 				)}
@@ -127,8 +106,11 @@ export function AnimeInformationSection({
 							Broadcast
 						</h3>
 						<p className="text-base text-foreground/70">
-							{formatBroadcast(anime.broadcastDay, anime.broadcastTime)} (
-							{anime.broadcastTimezone})
+							{convertBroadcastDayAndTimeToString(
+								anime.broadcastDay,
+								anime.broadcastTime,
+							)}{" "}
+							({anime.broadcastTimezone})
 						</p>
 					</div>
 				)}

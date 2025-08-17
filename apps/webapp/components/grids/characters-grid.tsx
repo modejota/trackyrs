@@ -1,5 +1,6 @@
 import type { CharacterWithRole } from "@trackyrs/database/types/anime-with-relations";
 import { Badge } from "@trackyrs/ui/components/badge";
+import { UsersRound } from "lucide-react";
 import Image from "next/image";
 
 interface CharactersGridProps {
@@ -12,7 +13,6 @@ interface CharacterCardProps {
 }
 
 function CharacterCard({ data, isMain = false }: CharacterCardProps) {
-	const imageUrl = data.character.images;
 	// @ts-ignore linter doesn't recognize extension of drizzle base row when doing joins
 	const role = data.role;
 
@@ -22,7 +22,7 @@ function CharacterCard({ data, isMain = false }: CharacterCardProps) {
 				className={`relative ${isMain ? "aspect-[3/4]" : "aspect-[3/4]"} overflow-hidden`}
 			>
 				<Image
-					src={imageUrl}
+					src={data.character.images}
 					alt={`${data.character.name || "Character"} - ${role} character`}
 					fill
 					className="object-cover"
@@ -75,35 +75,18 @@ function CharacterCard({ data, isMain = false }: CharacterCardProps) {
 export function CharactersGrid({ characters }: CharactersGridProps) {
 	if (!characters || characters.length === 0) {
 		return (
-			<div className="py-12 text-center" aria-live="polite">
-				<div
-					className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-muted"
-					aria-hidden="true"
-				>
-					<svg
-						className="h-12 w-12 text-muted-foreground"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						xmlns="http://www.w3.org/2000/svg"
-						aria-label="No characters available"
-					>
-						<title>No characters available</title>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-						/>
-					</svg>
+			<div className="py-12 text-center">
+				<div className="mx-auto max-w-md">
+					<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted p-4">
+						<UsersRound className="h-6 w-6 text-muted-foreground" />
+					</div>
+					<h3 className="mb-2 font-semibold text-lg">
+						No Characters Available
+					</h3>
+					<p className="text-muted-foreground text-sm">
+						There is no characters information available yet.
+					</p>
 				</div>
-				<h3 className="mb-2 font-medium text-base text-muted-foreground sm:text-lg">
-					No Characters Available
-				</h3>
-				<p className="mx-auto max-w-md text-muted-foreground text-sm">
-					Character information is not available for this anime yet. Check back
-					later for updates.
-				</p>
 			</div>
 		);
 	}
