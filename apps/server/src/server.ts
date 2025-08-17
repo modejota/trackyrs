@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { type AuthType, auth } from "@/config/auth.config";
 
 import animeController from "@/controllers/anime-controller";
+import mangaController from "@/controllers/manga-controller";
 
 const app = new Hono<{ Bindings: AuthType }>({
 	strict: false,
@@ -25,5 +26,6 @@ app.use(
 app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 
 app.route("/api/anime", animeController);
+app.route("/api/manga", mangaController);
 
 export default app;
