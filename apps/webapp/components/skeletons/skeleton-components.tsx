@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader } from "@trackyrs/ui/components/card";
 import { Skeleton } from "@trackyrs/ui/components/skeleton";
+import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
+import { CardSkeleton } from "@/components/skeletons/card-skeleton";
 
 export function AnimeOrMangaHeroSkeleton() {
 	return (
@@ -40,7 +42,7 @@ export function AnimeOrMangaHeroSkeleton() {
 
 					{/* Additional Info */}
 					<div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-2">
-						{["info-1", "info-2", "info-3", "info-4"].map((key) => (
+						{generateArray("info", 4).map((key) => (
 							<div key={key} className="space-y-1">
 								<Skeleton className="h-4 w-16" />
 								<Skeleton className="h-4 w-24" />
@@ -63,7 +65,7 @@ export function AnimeOrMangaInfoSkeleton() {
 							<Skeleton className="h-6 w-32" />
 						</CardHeader>
 						<CardContent className="space-y-3">
-							{["row-1", "row-2", "row-3", "row-4"].map((rowKey) => (
+							{generateArray("row", 4).map((rowKey) => (
 								<div
 									key={`${cardKey}-${rowKey}`}
 									className="flex items-center justify-between"
@@ -99,29 +101,8 @@ export function AnimeOrMangaTabsSkeleton() {
 					</div>
 
 					<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-						{[
-							"item-1",
-							"item-2",
-							"item-3",
-							"item-4",
-							"item-5",
-							"item-6",
-							"item-7",
-							"item-8",
-							"item-9",
-							"item-10",
-							"item-11",
-							"item-12",
-						].map((key) => (
-							<Card key={key} className="overflow-hidden">
-								<CardContent className="p-0">
-									<Skeleton className="h-40 w-full" />
-									<div className="space-y-2 p-3">
-										<Skeleton className="h-4 w-full" />
-										<Skeleton className="h-3 w-3/4" />
-									</div>
-								</CardContent>
-							</Card>
+						{generateArray("item", 12).map((key) => (
+							<CardSkeleton key={key} />
 						))}
 					</div>
 				</div>
@@ -135,16 +116,7 @@ export function AnimeOrMangaInformationSkeleton() {
 		<section className="w-full rounded-lg border bg-card p-6">
 			<Skeleton className="mb-4 h-6 w-32" />
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-				{[
-					"info-item-1",
-					"info-item-2",
-					"info-item-3",
-					"info-item-4",
-					"info-item-5",
-					"info-item-6",
-					"info-item-7",
-					"info-item-8",
-				].map((key) => (
+				{generateArray("info-item", 8).map((key) => (
 					<div key={key} className="space-y-1">
 						<Skeleton className="h-3 w-16" />
 						<Skeleton className="h-6 w-full" />
