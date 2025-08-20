@@ -32,4 +32,13 @@ export default class AnimeGenreRepository {
 			.returning();
 		return result[0] as AnimeGenre;
 	}
+
+	static async findDistinctGenres() {
+		const result = await database
+			.selectDistinctOn([animeGenreTable.name])
+			.from(animeGenreTable)
+			.orderBy(animeGenreTable.name);
+
+		return result.map((row) => row.name);
+	}
 }

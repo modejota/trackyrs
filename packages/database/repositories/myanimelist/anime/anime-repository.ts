@@ -1,9 +1,29 @@
-import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import {
+	and,
+	asc,
+	countDistinct,
+	desc,
+	eq,
+	gt,
+	gte,
+	ilike,
+	inArray,
+	isNull,
+	or,
+	sql,
+} from "drizzle-orm";
 import { database } from "@/index";
 import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
+import { animeGenreTable } from "@/schemas/myanimelist/anime/anime-genre-schema";
 import type { Anime, NewAnime } from "@/schemas/myanimelist/anime/anime-schema";
 import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
-import type { SeasonNullable } from "@/types/anime-with-relations";
+import { animeToGenreTable } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
+import type {
+	AnimeStatus,
+	AnimeType,
+	Season,
+	SeasonNullable,
+} from "@/types/anime-with-relations";
 
 export default class AnimeRepository {
 	static async findById(id: number) {
@@ -104,7 +124,11 @@ export default class AnimeRepository {
 			.select()
 			.from(animeTable)
 			.where(and(seasonCondition, yearCondition))
-			.orderBy(animeTable.title);
+			.orderBy(
+				sql`${animeTable.referenceScore} IS NULL`,
+				desc(animeTable.referenceScore),
+				asc(animeTable.title),
+			);
 	}
 
 	static async findDistinctYears() {
@@ -114,5 +138,92 @@ export default class AnimeRepository {
 			.orderBy(desc(animeTable.year));
 
 		return result.map((row) => row.year);
+	}
+
+	static async findTopByReferenceScore(limit = 50, offset = 0) {
+		return await database
+			.select()
+			.from(animeTable)
+			.where(gt(animeTable.referenceScoredBy, 0))
+			.orderBy(
+				sql`${animeTable.referenceScore} IS NULL`,
+				desc(animeTable.referenceScore),
+				asc(animeTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
+	}
+
+	static async search(
+		criteria: {
+			years?: number[];
+			seasons?: Season[];
+			types?: AnimeType[];
+			statuses?: AnimeStatus[];
+			genres?: string[];
+			title?: string;
+		},
+		limit = 20,
+		offset = 0,
+	) {
+		const conditions = [];
+
+		if (criteria.years && criteria.years.length > 0) {
+			conditions.push(inArray(animeTable.year, criteria.years));
+		}
+
+		if (criteria.seasons && criteria.seasons.length > 0) {
+			conditions.push(inArray(animeTable.season, criteria.seasons));
+		}
+
+		if (criteria.types && criteria.types.length > 0) {
+			conditions.push(inArray(animeTable.type, criteria.types));
+		}
+
+		if (criteria.statuses && criteria.statuses.length > 0) {
+			conditions.push(inArray(animeTable.status, criteria.statuses));
+		}
+
+		if (criteria.title && criteria.title.trim()) {
+			const titleSearch = `%${criteria.title.trim()}%`;
+			conditions.push(
+				or(
+					ilike(animeTable.title, titleSearch),
+					ilike(animeTable.titleEnglish, titleSearch),
+				),
+			);
+		}
+
+		if (criteria.genres && criteria.genres.length > 0) {
+			const genreFilteredIds = await database
+				.select({ animeId: animeToGenreTable.animeId })
+				.from(animeToGenreTable)
+				.innerJoin(
+					animeGenreTable,
+					eq(animeToGenreTable.genreId, animeGenreTable.id),
+				)
+				.where(inArray(animeGenreTable.name, criteria.genres))
+				.groupBy(animeToGenreTable.animeId)
+				.having(
+					gte(countDistinct(animeGenreTable.name), criteria.genres.length),
+				);
+
+			const filteredIds = genreFilteredIds.map((row) => row.animeId);
+			if (filteredIds.length === 0) return [];
+
+			conditions.push(inArray(animeTable.id, filteredIds));
+		}
+
+		return await database
+			.select()
+			.from(animeTable)
+			.where(conditions.length > 0 ? and(...conditions) : undefined)
+			.orderBy(
+				sql`${animeTable.referenceScore} IS NULL`,
+				desc(animeTable.referenceScore),
+				asc(animeTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
 	}
 }

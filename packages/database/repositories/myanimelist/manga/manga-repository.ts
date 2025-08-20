@@ -1,6 +1,21 @@
-import { eq, gte, sql } from "drizzle-orm";
+import {
+	and,
+	asc,
+	countDistinct,
+	desc,
+	eq,
+	gte,
+	ilike,
+	inArray,
+	isNotNull,
+	or,
+	sql,
+} from "drizzle-orm";
 import { database, mangaTable } from "@/index";
+import { mangaGenreTable } from "@/schemas/myanimelist/manga/manga-genre-schema";
 import type { Manga, NewManga } from "@/schemas/myanimelist/manga/manga-schema";
+import { mangaToGenreTable } from "@/schemas/myanimelist/manga/manga-to-genre-schema";
+import type { MangaStatus, MangaType } from "@/types/manga-with-relations";
 
 export default class MangaRepository {
 	static async findById(id: number) {
@@ -75,5 +90,126 @@ export default class MangaRepository {
 			.orderBy(mangaTable.id);
 
 		return result.map((row) => row.id);
+	}
+
+	static async findDistinctYears() {
+		const yearExpr =
+			sql<number>`EXTRACT(YEAR FROM ${mangaTable.publishingFrom})`.as("year");
+
+		const result = await database
+			.select({ year: yearExpr })
+			.from(mangaTable)
+			.where(sql`${mangaTable.publishingFrom} IS NOT NULL`)
+			.groupBy(yearExpr)
+			.orderBy(desc(yearExpr));
+
+		return result
+			.map((row) => row.year)
+			.filter((year): year is number => year !== null);
+	}
+
+	static async findTopByReferenceScore(limit = 50, offset = 0) {
+		return await database
+			.select()
+			.from(mangaTable)
+			.where(isNotNull(mangaTable.referenceScoredBy))
+			.orderBy(
+				sql`${mangaTable.referenceScore} IS NULL`,
+				desc(mangaTable.referenceScore),
+				asc(mangaTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
+	}
+
+	static async findOngoing(limit = 50, offset = 0) {
+		return await database
+			.select()
+			.from(mangaTable)
+			.where(
+				and(
+					eq(mangaTable.publishing, true),
+					isNotNull(mangaTable.referenceScore),
+				),
+			)
+			.orderBy(
+				sql`${mangaTable.referenceScore} IS NULL`,
+				desc(mangaTable.referenceScore),
+				asc(mangaTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
+	}
+
+	static async search(
+		criteria: {
+			years?: number[];
+			statuses?: MangaStatus[];
+			types?: MangaType[];
+			genres?: string[];
+			title?: string;
+		},
+		limit = 20,
+		offset = 0,
+	) {
+		const conditions = [];
+
+		if (criteria.years && criteria.years.length > 0) {
+			const yearConditions = criteria.years.map(
+				(year) =>
+					sql`EXTRACT(YEAR FROM ${mangaTable.publishingFrom}) = ${year}`,
+			);
+			conditions.push(or(...yearConditions));
+		}
+
+		if (criteria.statuses && criteria.statuses.length > 0) {
+			conditions.push(inArray(mangaTable.status, criteria.statuses));
+		}
+
+		if (criteria.types && criteria.types.length > 0) {
+			conditions.push(inArray(mangaTable.type, criteria.types));
+		}
+
+		if (criteria.title && criteria.title.trim()) {
+			const titleSearch = `%${criteria.title.trim()}%`;
+			conditions.push(
+				or(
+					ilike(mangaTable.title, titleSearch),
+					ilike(mangaTable.titleEnglish, titleSearch),
+				),
+			);
+		}
+
+		if (criteria.genres && criteria.genres.length > 0) {
+			const genreFilteredIds = await database
+				.select({ mangaId: mangaToGenreTable.mangaId })
+				.from(mangaToGenreTable)
+				.innerJoin(
+					mangaGenreTable,
+					eq(mangaToGenreTable.genreId, mangaGenreTable.id),
+				)
+				.where(inArray(mangaGenreTable.name, criteria.genres))
+				.groupBy(mangaToGenreTable.mangaId)
+				.having(
+					gte(countDistinct(mangaGenreTable.name), criteria.genres.length),
+				);
+
+			const filteredIds = genreFilteredIds.map((row) => row.mangaId);
+			if (filteredIds.length === 0) return [];
+
+			conditions.push(inArray(mangaTable.id, filteredIds));
+		}
+
+		return await database
+			.select()
+			.from(mangaTable)
+			.where(conditions.length > 0 ? and(...conditions) : undefined)
+			.orderBy(
+				sql`${mangaTable.referenceScore} IS NULL`,
+				desc(mangaTable.referenceScore),
+				asc(mangaTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
 	}
 }

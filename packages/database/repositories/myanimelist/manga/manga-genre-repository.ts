@@ -40,4 +40,13 @@ export default class MangaGenreRepository {
 			.returning();
 		return result[0] as MangaGenre;
 	}
+
+	static async findDistinctGenres() {
+		const result = await database
+			.selectDistinctOn([mangaGenreTable.name])
+			.from(mangaGenreTable)
+			.orderBy(mangaGenreTable.name);
+
+		return result.map((row) => row.name);
+	}
 }
