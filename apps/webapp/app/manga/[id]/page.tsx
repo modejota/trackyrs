@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ClientMangaDetail from "./client";
+import ClientMangaDetail from "@/app/manga/[id]/client";
 
 interface MangaDetailPageProps {
 	params: Promise<{ id: string }>;

@@ -1,9 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import type { MangaWithRelations } from "@trackyrs/database/types/manga-with-relations";
 import Link from "next/link";
 import { Suspense } from "react";
+import { useMangaDetails } from "@/app/api/manga/queries";
 import { MangaHeroSection } from "@/app/manga/_components/manga-hero-section";
 import { MangaInformationSection } from "@/app/manga/_components/manga-information-section";
 import { MangaTabsSection } from "@/app/manga/_components/manga-tabs-section";
@@ -14,23 +13,6 @@ import {
 	AnimeOrMangaInfoSkeleton,
 	AnimeOrMangaTabsSkeleton,
 } from "@/components/skeletons/skeleton-components";
-
-function useMangaDetails(mangaId: number) {
-	return useQuery<MangaWithRelations>({
-		queryKey: ["manga", mangaId],
-		queryFn: async () => {
-			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
-			const res = await fetch(`${base}/api/manga/${mangaId}`);
-			if (!res.ok) throw new Error(`Failed to fetch manga: ${res.status}`);
-			const json = await res.json();
-			if (!json?.success || !json?.data)
-				throw new Error("Invalid response shape");
-			return json.data as MangaWithRelations;
-		},
-		staleTime: 60_000,
-		gcTime: 5 * 60_000,
-	});
-}
 
 function MangaNotFound() {
 	return (
