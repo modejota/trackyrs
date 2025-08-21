@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ClientAnimeDetail from "./client";
+import ClientAnimeDetail from "@/app/anime/[id]/client";
 
 interface AnimeDetailPageProps {
 	params: Promise<{ id: string }>;

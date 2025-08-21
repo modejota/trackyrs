@@ -1,12 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import type { AnimeWithRelations } from "@trackyrs/database/types/anime-with-relations";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AnimeHeroSection } from "@/app/anime/_components/anime-hero-section";
 import { AnimeInformationSection } from "@/app/anime/_components/anime-information-section";
 import { AnimeTabsSection } from "@/app/anime/_components/anime-tabs-section";
+import { useAnimeDetails } from "@/app/api/anime/queries";
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
 	AnimeOrMangaHeroSkeleton,
@@ -14,23 +13,6 @@ import {
 	AnimeOrMangaInfoSkeleton,
 	AnimeOrMangaTabsSkeleton,
 } from "@/components/skeletons/skeleton-components";
-
-function useAnimeDetails(animeId: number) {
-	return useQuery<AnimeWithRelations>({
-		queryKey: ["anime", animeId],
-		queryFn: async () => {
-			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
-			const res = await fetch(`${base}/api/anime/${animeId}`);
-			if (!res.ok) throw new Error(`Failed to fetch anime: ${res.status}`);
-			const json = await res.json();
-			if (!json?.success || !json?.data)
-				throw new Error("Invalid response shape");
-			return json.data as AnimeWithRelations;
-		},
-		staleTime: 60_000,
-		gcTime: 5 * 60_000,
-	});
-}
 
 function AnimeNotFound() {
 	return (
