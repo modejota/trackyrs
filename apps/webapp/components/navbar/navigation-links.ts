@@ -4,18 +4,9 @@ export const navigationLinks = [
 		submenu: true,
 		type: "simple",
 		items: [
-			{
-				href: "#",
-				label: "All Animes",
-			},
-			{
-				href: "#",
-				label: "Season Animes",
-			},
-			{
-				href: "#",
-				label: "Top 100 Animes",
-			},
+			{ href: "/anime/search", label: "Search Animes" },
+			{ href: "/anime/season", label: "Season Animes" },
+			{ href: "/anime/top", label: "Top Animes" },
 		],
 	},
 	{
@@ -23,9 +14,9 @@ export const navigationLinks = [
 		submenu: true,
 		type: "simple",
 		items: [
-			{ href: "#", label: "All Mangas" },
-			{ href: "#", label: "Ongoing Mangas" },
-			{ href: "#", label: "Top 100 Mangas" },
+			{ href: "/manga/search", label: "Search Mangas" },
+			{ href: "/manga/ongoing", label: "Ongoing Mangas" },
+			{ href: "/manga/top", label: "Top Mangas" },
 		],
 	},
 ];
