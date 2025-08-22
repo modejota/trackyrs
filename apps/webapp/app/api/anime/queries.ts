@@ -111,7 +111,7 @@ export function useInfiniteTopAnime(limit = 50) {
 
 export function useInfiniteAnimeSearch(
 	criteria: AnimeSearchCriteria,
-	limit = 20,
+	limit = 24,
 ) {
 	return useInfiniteQuery({
 		queryKey: ["anime-search", criteria, limit],

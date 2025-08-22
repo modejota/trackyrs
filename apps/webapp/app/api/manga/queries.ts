@@ -116,7 +116,7 @@ export function useInfiniteOngoingManga(limit = 50) {
 
 export function useInfiniteMangaSearch(
 	criteria: MangaSearchCriteria,
-	limit = 20,
+	limit = 24,
 ) {
 	return useInfiniteQuery({
 		queryKey: ["manga-search", criteria, limit],

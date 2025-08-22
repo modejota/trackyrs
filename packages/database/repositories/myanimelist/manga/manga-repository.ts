@@ -149,7 +149,7 @@ export default class MangaRepository {
 			genres?: string[];
 			title?: string;
 		},
-		limit = 20,
+		limit = 24,
 		offset = 0,
 	) {
 		const conditions = [];
