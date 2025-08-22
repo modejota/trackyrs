@@ -1,4 +1,3 @@
-import type React from "react";
 import "@trackyrs/ui/globals.css";
 
 import { Toaster } from "@trackyrs/ui/components/sonner";

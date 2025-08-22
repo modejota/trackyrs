@@ -1,8 +1,8 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
-import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
-import { characterTable } from "@/schemas/myanimelist/character/character-schema";
-import type { AnimeCharacterRole } from "@/types/anime-with-relations";
+import type { AnimeCharacterRole } from "../../../types/anime-with-relations";
+import { characterTable } from "../character/character-schema";
+import { animeTable } from "./anime-schema";
 
 export const animeToCharacterTable = pgTable(
 	"anime_to_character",

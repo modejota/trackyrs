@@ -1,3 +1,4 @@
+import {} from "better-auth";
 import {
 	inferAdditionalFields,
 	usernameClient,

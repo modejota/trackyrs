@@ -8,7 +8,7 @@ import {
 	timestamp,
 	unique,
 } from "drizzle-orm/pg-core";
-import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
+import { animeTable } from "./anime-schema";
 
 export const animeEpisodeTable = pgTable(
 	"anime_episodes",

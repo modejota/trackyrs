@@ -1,11 +1,11 @@
-import type { Character } from "@/schemas/myanimelist/character/character-schema";
-import type { MangaGenre } from "@/schemas/myanimelist/manga/manga-genre-schema";
-import type { Manga } from "@/schemas/myanimelist/manga/manga-schema";
-import type { MangaToCharacter } from "@/schemas/myanimelist/manga/manga-to-character-schema";
-import type { MangaToGenre } from "@/schemas/myanimelist/manga/manga-to-genre-schema";
-import type { MangaToMagazine } from "@/schemas/myanimelist/manga/manga-to-magazine-schema";
-import type { MangaToPeople } from "@/schemas/myanimelist/manga/manga-to-people-schema";
-import type { People } from "@/schemas/myanimelist/people-schema";
+import type { Character } from "../schemas/myanimelist/character/character-schema";
+import type { MangaGenre } from "../schemas/myanimelist/manga/manga-genre-schema";
+import type { Manga } from "../schemas/myanimelist/manga/manga-schema";
+import type { MangaToCharacter } from "../schemas/myanimelist/manga/manga-to-character-schema";
+import type { MangaToGenre } from "../schemas/myanimelist/manga/manga-to-genre-schema";
+import type { MangaToMagazine } from "../schemas/myanimelist/manga/manga-to-magazine-schema";
+import type { MangaToPeople } from "../schemas/myanimelist/manga/manga-to-people-schema";
+import type { People } from "../schemas/myanimelist/people-schema";
 
 export enum MangaType {
 	MANGA = "Manga",

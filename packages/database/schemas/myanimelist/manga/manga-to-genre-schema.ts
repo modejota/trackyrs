@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
-import { mangaGenreTable } from "@/schemas/myanimelist/manga/manga-genre-schema";
-import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
+import { mangaGenreTable } from "./manga-genre-schema";
+import { mangaTable } from "./manga-schema";
 
 export const mangaToGenreTable = pgTable(
 	"manga_to_genre",

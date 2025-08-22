@@ -1,10 +1,10 @@
-import type { AnimeGenre, AnimeToGenre } from "@/schemas";
-import type { AnimeEpisode } from "@/schemas/myanimelist/anime/anime-episode-schema";
-import type { Anime } from "@/schemas/myanimelist/anime/anime-schema";
-import type { AnimeToCharacter } from "@/schemas/myanimelist/anime/anime-to-character-schema";
-import type { AnimeToPeople } from "@/schemas/myanimelist/anime/anime-to-people-schema";
-import type { Character } from "@/schemas/myanimelist/character/character-schema";
-import type { People } from "@/schemas/myanimelist/people-schema";
+import type { AnimeGenre, AnimeToGenre } from "../schemas";
+import type { AnimeEpisode } from "../schemas/myanimelist/anime/anime-episode-schema";
+import type { Anime } from "../schemas/myanimelist/anime/anime-schema";
+import type { AnimeToCharacter } from "../schemas/myanimelist/anime/anime-to-character-schema";
+import type { AnimeToPeople } from "../schemas/myanimelist/anime/anime-to-people-schema";
+import type { Character } from "../schemas/myanimelist/character/character-schema";
+import type { People } from "../schemas/myanimelist/people-schema";
 
 export enum AnimeType {
 	TV = "TV",

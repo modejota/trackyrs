@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, jsonb, pgTable, serial, unique } from "drizzle-orm/pg-core";
-import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
-import { peopleTable } from "@/schemas/myanimelist/people-schema";
+import { peopleTable } from "../people-schema";
+import { animeTable } from "./anime-schema";
 
 export const animeToPeopleTable = pgTable(
 	"anime_to_people",

@@ -1,6 +1,6 @@
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
-import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
-import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
+import { animeTable } from "./anime/anime-schema";
+import { mangaTable } from "./manga/manga-schema";
 
 export const animeMangaRelationTable = pgTable(
 	"anime_manga_relation",

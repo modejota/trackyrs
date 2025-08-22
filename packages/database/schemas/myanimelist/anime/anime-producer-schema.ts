@@ -1,5 +1,5 @@
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import type { ProducerTitlesInfo } from "@/types/anime-with-relations";
+import type { ProducerTitlesInfo } from "../../../types/anime-with-relations";
 
 export const animeProducersTable = pgTable("anime_producers", {
 	id: integer("id").primaryKey(),

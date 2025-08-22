@@ -10,11 +10,6 @@ import {
 	timestamp,
 	varchar,
 } from "drizzle-orm/pg-core";
-import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
-import { animeToCharacterTable } from "@/schemas/myanimelist/anime/anime-to-character-schema";
-import { animeToGenreTable } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
-import { animeToPeopleTable } from "@/schemas/myanimelist/anime/anime-to-people-schema";
-import { animeToProducersTable } from "@/schemas/myanimelist/anime/anime-to-producers-schema";
 import type {
 	AnimeExternalLink,
 	AnimeStatusNullable,
@@ -25,7 +20,12 @@ import type {
 	DaysOfWeekNullable,
 	RatingNullable,
 	SeasonNullable,
-} from "@/types/anime-with-relations";
+} from "../../../types/anime-with-relations";
+import { animeEpisodeTable } from "./anime-episode-schema";
+import { animeToCharacterTable } from "./anime-to-character-schema";
+import { animeToGenreTable } from "./anime-to-genre-schema";
+import { animeToPeopleTable } from "./anime-to-people-schema";
+import { animeToProducersTable } from "./anime-to-producers-schema";
 
 export const animeTable = pgTable(
 	"animes",

@@ -9,10 +9,7 @@
 		"incremental": true,
 		"outDir": "./dist",
 		"rootDir": "./",
-		"baseUrl": "./",
-		"paths": {
-			"@/*": ["./*"]
-		}
+		"baseUrl": "./"
 	},
 	"include": ["./**/*"],
 	"exclude": ["node_modules", "dist"]

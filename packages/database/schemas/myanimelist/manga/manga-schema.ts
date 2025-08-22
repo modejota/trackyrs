@@ -10,15 +10,15 @@ import {
 	timestamp,
 	varchar,
 } from "drizzle-orm/pg-core";
-import { mangaToCharacterTable } from "@/schemas/myanimelist/manga/manga-to-character-schema";
-import { mangaToGenreTable } from "@/schemas/myanimelist/manga/manga-to-genre-schema";
-import { mangaToMagazineTable } from "@/schemas/myanimelist/manga/manga-to-magazine-schema";
-import { mangaToPeopleTable } from "@/schemas/myanimelist/manga/manga-to-people-schema";
 import type {
 	MangaStatus,
 	MangaType,
 	TitleInfo,
-} from "@/types/manga-with-relations";
+} from "../../../types/manga-with-relations";
+import { mangaToCharacterTable } from "./manga-to-character-schema";
+import { mangaToGenreTable } from "./manga-to-genre-schema";
+import { mangaToMagazineTable } from "./manga-to-magazine-schema";
+import { mangaToPeopleTable } from "./manga-to-people-schema";
 
 export const mangaTable = pgTable(
 	"mangas",

@@ -1,14 +1,15 @@
-import type { CharacterWithRole } from "@trackyrs/database/types/anime-with-relations";
+import type { CharacterWithRole as AnimeCharacterWithRole } from "@trackyrs/database/types/anime-with-relations";
+import type { CharacterWithRole as MangaCharacterWithRole } from "@trackyrs/database/types/manga-with-relations";
 import { Badge } from "@trackyrs/ui/components/badge";
 import { UsersRound } from "lucide-react";
 import Image from "next/image";
 
 interface CharactersGridProps {
-	characters: CharacterWithRole[];
+	characters: AnimeCharacterWithRole[] | MangaCharacterWithRole[];
 }
 
 interface CharacterCardProps {
-	data: CharacterWithRole;
+	data: AnimeCharacterWithRole | MangaCharacterWithRole;
 	isMain: boolean;
 }
 
@@ -92,10 +93,10 @@ export function CharactersGrid({ characters }: CharactersGridProps) {
 	}
 
 	const mainCharacters = characters.filter(
-		(char: CharacterWithRole) => (char as any).role === "Main",
+		(char) => (char as any).role === "Main",
 	);
 	const supportingCharacters = characters.filter(
-		(char: CharacterWithRole) => (char as any).role === "Supporting",
+		(char) => (char as any).role === "Supporting",
 	);
 
 	return (
@@ -147,7 +148,7 @@ export function CharactersGrid({ characters }: CharactersGridProps) {
 					</div>
 
 					<div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7">
-						{supportingCharacters.map((character: CharacterWithRole) => {
+						{supportingCharacters.map((character) => {
 							const charData = character as any;
 							return (
 								<CharacterCard

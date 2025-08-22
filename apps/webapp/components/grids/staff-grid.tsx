@@ -1,4 +1,5 @@
-import type { StaffWithRole } from "@trackyrs/database/types/anime-with-relations";
+import type { StaffWithRole as AnimeStaffWithRole } from "@trackyrs/database/types/anime-with-relations";
+import type { StaffWithRole as MangaStaffWithRole } from "@trackyrs/database/types/manga-with-relations";
 import { Badge } from "@trackyrs/ui/components/badge";
 import {
 	Tooltip,
@@ -9,11 +10,11 @@ import { UsersRound } from "lucide-react";
 import Image from "next/image";
 
 interface StaffGridProps {
-	staff: StaffWithRole[];
+	staff: AnimeStaffWithRole[] | MangaStaffWithRole[];
 }
 
 interface StaffCardProps {
-	data: StaffWithRole;
+	data: AnimeStaffWithRole | MangaStaffWithRole;
 	isMain: boolean;
 }
 
@@ -23,9 +24,6 @@ function StaffCard({ data, isMain = false }: StaffCardProps) {
 		(data as unknown as { positions?: string[] }).positions,
 	)
 		? ((data as unknown as { positions?: string[] }).positions ?? [])
-		: [];
-	const alternateNames = Array.isArray(data.people.nicknames)
-		? data.people.nicknames
 		: [];
 
 	return (
@@ -61,53 +59,6 @@ function StaffCard({ data, isMain = false }: StaffCardProps) {
 					>
 						{data.people.givenName} {data.people.familyName}
 					</p>
-				)}
-
-				{alternateNames.length > 0 && (
-					<ul className="flex flex-wrap gap-1" aria-label="Alternate names">
-						{alternateNames.map((name: string) => (
-							<li key={name}>
-								<Badge
-									variant="outline"
-									className={`${isMain ? "px-2 py-0.5 text-xs" : "px-1.5 py-0.5 text-xs"} max-w-full truncate`}
-									title={name}
-								>
-									{name}
-								</Badge>
-							</li>
-						))}
-						{alternateNames.length > 3 && (
-							<li>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Badge
-											variant="outline"
-											className={`${isMain ? "px-2 py-0.5 text-xs" : "px-1.5 py-0.5 text-xs"} cursor-help`}
-											aria-label={`${alternateNames.length - 3} more alternate names`}
-										>
-											+{alternateNames.length - 3}
-										</Badge>
-									</TooltipTrigger>
-									<TooltipContent>
-										<div className="space-y-1">
-											<p className="font-medium text-xs">Additional names:</p>
-											<div className="flex flex-wrap gap-1">
-												{alternateNames.map((name: string) => (
-													<Badge
-														key={`alt-${name}`}
-														variant="outline"
-														className="text-xs"
-													>
-														{name}
-													</Badge>
-												))}
-											</div>
-										</div>
-									</TooltipContent>
-								</Tooltip>
-							</li>
-						)}
-					</ul>
 				)}
 
 				{positions.length > 0 && (

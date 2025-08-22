@@ -1,8 +1,8 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, serial, unique, varchar } from "drizzle-orm/pg-core";
-import { characterTable } from "@/schemas/myanimelist/character/character-schema";
-import { mangaTable } from "@/schemas/myanimelist/manga/manga-schema";
-import type { MangaCharacterRole } from "@/types/manga-with-relations";
+import type { MangaCharacterRole } from "../../../types/manga-with-relations";
+import { characterTable } from "../character/character-schema";
+import { mangaTable } from "./manga-schema";
 
 export const mangaToCharacterTable = pgTable(
 	"manga_to_character",
