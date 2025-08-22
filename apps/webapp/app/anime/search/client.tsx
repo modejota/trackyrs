@@ -13,7 +13,7 @@ import MultipleSelector, {
 	type Option,
 } from "@trackyrs/ui/components/multiselect";
 import { CircleX, Search, Search as SearchIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimeCard } from "@/app/anime/_components/anime-card";
 import { useInfiniteAnimeSearch } from "@/app/api/anime/queries";
 import type { AnimeSearchCriteria } from "@/app/api/anime/types";
@@ -58,8 +58,8 @@ export function AnimeSearchClient({
 	const observerRef = useRef<HTMLDivElement | null>(null);
 	const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-	const genres = initialGenres ?? [];
-	const years = initialYears ?? [];
+	const genres = useMemo(() => initialGenres ?? [], [initialGenres]);
+	const years = useMemo(() => initialYears ?? [], [initialYears]);
 
 	const {
 		data,
@@ -235,7 +235,7 @@ export function AnimeSearchClient({
 							<MultipleSelector
 								value={selectedGenreOptions}
 								onChange={handleGenreChange}
-								defaultOptions={genreOptions}
+								options={genreOptions}
 								placeholder="Select genres..."
 								commandProps={{
 									label: "Select genres",
@@ -279,7 +279,7 @@ export function AnimeSearchClient({
 							<MultipleSelector
 								value={selectedYearOptions}
 								onChange={handleYearChange}
-								defaultOptions={yearOptions}
+								options={yearOptions}
 								placeholder="Select years..."
 								commandProps={{
 									label: "Select years",

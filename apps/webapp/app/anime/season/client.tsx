@@ -6,12 +6,18 @@ import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
 import { AlertCircle, RefreshCw, Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { AnimeCard } from "@/app/anime/_components/anime-card";
-import { useAvailableYears, useSeasonalAnime } from "@/app/api/anime/queries";
+import { useSeasonalAnime } from "@/app/api/anime/queries";
 import { SeasonSelector } from "@/components/season-selector";
 import { CardSkeleton } from "@/components/skeletons/card-skeleton";
 import { getCurrentSeasonAndYear } from "@/lib/season-utils";
 
-export default function ClientAnimeSeason() {
+interface AnimeSeasonClientProps {
+	initialYears: number[];
+}
+
+export default function ClientAnimeSeason({
+	initialYears,
+}: AnimeSeasonClientProps) {
 	const defaults = useMemo(() => getCurrentSeasonAndYear(), []);
 	const [selectedSeason, setSelectedSeason] = useState<Season>(defaults.season);
 	const [selectedYear, setSelectedYear] = useState<number>(defaults.year);
@@ -21,9 +27,7 @@ export default function ClientAnimeSeason() {
 		selectedYear,
 	);
 
-	const { data: yearsData } = useAvailableYears();
-
-	const availableYears = useMemo(() => yearsData ?? [], [yearsData]);
+	const years = useMemo(() => initialYears ?? [], [initialYears]);
 
 	const handleSeasonChange = useCallback((season: Season, year: number) => {
 		setSelectedSeason(season);
@@ -43,7 +47,7 @@ export default function ClientAnimeSeason() {
 					<SeasonSelector
 						currentSeason={selectedSeason}
 						currentYear={selectedYear}
-						availableYears={availableYears}
+						availableYears={years}
 						onSeasonChange={handleSeasonChange}
 					/>
 				</header>

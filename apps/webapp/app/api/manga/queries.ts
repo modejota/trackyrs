@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import type { Manga } from "@trackyrs/database/schemas/myanimelist/manga/manga-schema";
 import type { MangaWithRelations } from "@trackyrs/database/types/manga-with-relations";
 import type {
+	AvailableMangaYearsApiEnvelope,
 	MangaOngoingApiEnvelope,
 	MangaSearchCriteria,
 	MangaSearchResponse,
@@ -43,6 +44,40 @@ export function useTopManga(limit = 30, page = 1) {
 			if (!json?.success || !json?.data)
 				throw new Error("Invalid response shape");
 			return json.data;
+		},
+		staleTime: 60 * 60 * 1000, // 1 hour
+		gcTime: 5 * 60 * 60 * 1000, // 5 hours
+	});
+}
+
+export function useAvailableYears() {
+	return useQuery<number[]>({
+		queryKey: ["manga", "years"],
+		queryFn: async () => {
+			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
+			const res = await fetch(`${base}/api/manga/years`);
+			if (!res.ok) throw new Error(`Failed to fetch years: ${res.status}`);
+			const json: AvailableMangaYearsApiEnvelope = await res.json();
+			if (!json?.success || !json?.data)
+				throw new Error("Invalid response shape");
+			return json.data.years;
+		},
+		staleTime: 60 * 60 * 1000, // 1 hour
+		gcTime: 5 * 60 * 60 * 1000, // 5 hours
+	});
+}
+
+export function useAvailableGenres() {
+	return useQuery<string[]>({
+		queryKey: ["manga", "genres"],
+		queryFn: async () => {
+			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
+			const res = await fetch(`${base}/api/manga/genres`);
+			if (!res.ok) throw new Error(`Failed to fetch genres: ${res.status}`);
+			const json = await res.json();
+			if (!json?.success || !json?.data)
+				throw new Error("Invalid response shape");
+			return json.data.genres as string[];
 		},
 		staleTime: 60 * 60 * 1000, // 1 hour
 		gcTime: 5 * 60 * 60 * 1000, // 5 hours

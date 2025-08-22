@@ -26,6 +26,11 @@ export interface MangaOngoingApiEnvelope {
 	};
 }
 
+export interface AvailableMangaYearsApiEnvelope {
+	success: boolean;
+	data: { years: number[] };
+}
+
 export interface MangaSearchCriteria {
 	title?: string;
 	genres?: string[];

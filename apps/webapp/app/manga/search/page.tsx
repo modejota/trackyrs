@@ -1,35 +1,18 @@
+"use client";
+
+import { useAvailableGenres, useAvailableYears } from "@/app/api/manga/queries";
 import { MangaSearchClient } from "@/app/manga/search/client";
 
-export default async function MangaSearchPage() {
-	const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
+export default function MangaSearchPage() {
+	const { data: yearsData } = useAvailableYears();
+	const { data: genresData } = useAvailableGenres();
 
-	const [genresRes, yearsRes] = await Promise.all([
-		fetch(`${base}/api/manga/genres`, {
-			next: { revalidate: 60 * 60 * 24 * 30 },
-		}),
-		fetch(`${base}/api/manga/years`, {
-			next: { revalidate: 60 * 60 * 24 * 30 },
-		}),
-	]);
-
-	let genres: string[] = [];
-	let years: number[] = [];
-
-	if (genresRes.ok) {
-		const json = await genresRes.json();
-		if (json?.success && json?.data?.genres) {
-			genres = json.data.genres as string[];
-		}
-	}
-
-	if (yearsRes.ok) {
-		const json = await yearsRes.json();
-		if (json?.success && json?.data?.years) {
-			years = (json.data.years as number[]).filter(
-				(y) => y !== null && y !== undefined,
-			);
-		}
-	}
+	const genres: string[] = (genresData ?? []).filter(
+		(g) => g !== null && g !== undefined,
+	) as string[];
+	const years: number[] = (yearsData ?? []).filter(
+		(y) => y !== null && y !== undefined,
+	) as number[];
 
 	return (
 		<main className="container mx-auto px-4 py-8">

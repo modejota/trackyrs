@@ -89,6 +89,23 @@ export function useAvailableYears() {
 	});
 }
 
+export function useAvailableGenres() {
+	return useQuery<string[]>({
+		queryKey: ["anime", "genres"],
+		queryFn: async () => {
+			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
+			const res = await fetch(`${base}/api/anime/genres`);
+			if (!res.ok) throw new Error(`Failed to fetch genres: ${res.status}`);
+			const json = await res.json();
+			if (!json?.success || !json?.data)
+				throw new Error("Invalid response shape");
+			return json.data.genres as string[];
+		},
+		staleTime: 60 * 60 * 1000, // 1 hour
+		gcTime: 5 * 60 * 60 * 1000, // 5 hours
+	});
+}
+
 export function useInfiniteTopAnime(limit = 50) {
 	return useInfiniteQuery({
 		queryKey: ["anime-top", limit],
