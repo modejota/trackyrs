@@ -11,11 +11,13 @@ import { Label } from "@trackyrs/ui/components/label";
 import MultipleSelector, {
 	type Option,
 } from "@trackyrs/ui/components/multiselect";
+import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
 import { CircleX, Search, Search as SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteMangaSearch } from "@/app/api/manga/queries";
 import type { MangaSearchCriteria } from "@/app/api/manga/types";
 import { MangaCard } from "@/app/manga/_components/manga-card";
+import { CardSkeleton } from "@/components/skeletons/card-skeleton";
 
 interface MangaSearchClientProps {
 	initialGenres: string[];
@@ -344,14 +346,10 @@ export function MangaSearchClient({
 							))}
 
 							{isFetchingNextPage &&
-								Array.from({ length: placeholderCount }).map((_, index) => (
-									<div
-										key={`placeholder-${data?.pages.length || 0}-${index}`}
-										className="animate-pulse"
-									>
-										<div className="h-64 w-full rounded-lg bg-muted/30" />
-									</div>
-								))}
+								generateArray(
+									"loading-next-manga-search-cards",
+									placeholderCount,
+								).map((key) => <CardSkeleton key={key} />)}
 						</div>
 					)}
 

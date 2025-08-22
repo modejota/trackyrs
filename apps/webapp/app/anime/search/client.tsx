@@ -12,11 +12,13 @@ import { Label } from "@trackyrs/ui/components/label";
 import MultipleSelector, {
 	type Option,
 } from "@trackyrs/ui/components/multiselect";
+import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
 import { CircleX, Search, Search as SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimeCard } from "@/app/anime/_components/anime-card";
 import { useInfiniteAnimeSearch } from "@/app/api/anime/queries";
 import type { AnimeSearchCriteria } from "@/app/api/anime/types";
+import { CardSkeleton } from "@/components/skeletons/card-skeleton";
 
 interface AnimeSearchClientProps {
 	initialGenres: string[];
@@ -384,14 +386,10 @@ export function AnimeSearchClient({
 							))}
 
 							{isFetchingNextPage &&
-								Array.from({ length: placeholderCount }).map((_, index) => (
-									<div
-										key={`placeholder-${data?.pages.length || 0}-${index}`}
-										className="animate-pulse"
-									>
-										<div className="h-64 w-full rounded-lg bg-muted/30" />
-									</div>
-								))}
+								generateArray(
+									"loading-next-anime-search-cards",
+									placeholderCount,
+								).map((key) => <CardSkeleton key={key} />)}
 						</div>
 					)}
 
