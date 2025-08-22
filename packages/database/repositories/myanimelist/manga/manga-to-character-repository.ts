@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
-import { database, mangaToCharacterTable } from "@/index";
+import { database, mangaToCharacterTable } from "../../../index";
 import type {
 	MangaToCharacter,
 	NewMangaToCharacter,
-} from "@/schemas/myanimelist/manga/manga-to-character-schema";
+} from "../../../schemas/myanimelist/manga/manga-to-character-schema";
 
 export default class MangaToCharacterRepository {
 	static async insert(relation: NewMangaToCharacter) {

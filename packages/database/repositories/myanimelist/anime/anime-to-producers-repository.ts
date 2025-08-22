@@ -1,11 +1,10 @@
-import { and, eq, sql } from "drizzle-orm";
-import { database } from "@/index";
+import { sql } from "drizzle-orm";
+import { database } from "../../../index";
 import {
-	type AnimeProducerRole,
 	type AnimeToProducers,
 	animeToProducersTable,
 	type NewAnimeToProducers,
-} from "@/schemas/myanimelist/anime/anime-to-producers-schema";
+} from "../../../schemas/myanimelist/anime/anime-to-producers-schema";
 
 export default class AnimeToProducersRepository {
 	static async insert(data: NewAnimeToProducers) {

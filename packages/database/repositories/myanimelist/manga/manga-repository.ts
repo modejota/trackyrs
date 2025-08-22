@@ -11,11 +11,17 @@ import {
 	or,
 	sql,
 } from "drizzle-orm";
-import { database, mangaTable } from "@/index";
-import { mangaGenreTable } from "@/schemas/myanimelist/manga/manga-genre-schema";
-import type { Manga, NewManga } from "@/schemas/myanimelist/manga/manga-schema";
-import { mangaToGenreTable } from "@/schemas/myanimelist/manga/manga-to-genre-schema";
-import type { MangaStatus, MangaType } from "@/types/manga-with-relations";
+import { database, mangaTable } from "../../../index";
+import { mangaGenreTable } from "../../../schemas/myanimelist/manga/manga-genre-schema";
+import type {
+	Manga,
+	NewManga,
+} from "../../../schemas/myanimelist/manga/manga-schema";
+import { mangaToGenreTable } from "../../../schemas/myanimelist/manga/manga-to-genre-schema";
+import type {
+	MangaStatus,
+	MangaType,
+} from "../../../types/manga-with-relations";
 
 export default class MangaRepository {
 	static async findById(id: number) {

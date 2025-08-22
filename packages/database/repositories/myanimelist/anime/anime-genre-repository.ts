@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { animeGenreTable, database } from "@/index";
+import { animeGenreTable, database } from "../../../index";
 import type {
 	AnimeGenre,
 	NewAnimeGenre,
-} from "@/schemas/myanimelist/anime/anime-genre-schema";
+} from "../../../schemas/myanimelist/anime/anime-genre-schema";
 
 export default class AnimeGenreRepository {
 	static async findById(id: number) {

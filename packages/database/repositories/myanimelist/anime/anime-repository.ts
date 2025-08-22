@@ -12,18 +12,21 @@ import {
 	or,
 	sql,
 } from "drizzle-orm";
-import { database } from "@/index";
-import { animeEpisodeTable } from "@/schemas/myanimelist/anime/anime-episode-schema";
-import { animeGenreTable } from "@/schemas/myanimelist/anime/anime-genre-schema";
-import type { Anime, NewAnime } from "@/schemas/myanimelist/anime/anime-schema";
-import { animeTable } from "@/schemas/myanimelist/anime/anime-schema";
-import { animeToGenreTable } from "@/schemas/myanimelist/anime/anime-to-genre-schema";
+import { database } from "../../../index";
+import { animeEpisodeTable } from "../../../schemas/myanimelist/anime/anime-episode-schema";
+import { animeGenreTable } from "../../../schemas/myanimelist/anime/anime-genre-schema";
+import type {
+	Anime,
+	NewAnime,
+} from "../../../schemas/myanimelist/anime/anime-schema";
+import { animeTable } from "../../../schemas/myanimelist/anime/anime-schema";
+import { animeToGenreTable } from "../../../schemas/myanimelist/anime/anime-to-genre-schema";
 import type {
 	AnimeStatus,
 	AnimeType,
 	Season,
 	SeasonNullable,
-} from "@/types/anime-with-relations";
+} from "../../../types/anime-with-relations";
 
 export default class AnimeRepository {
 	static async findById(id: number) {

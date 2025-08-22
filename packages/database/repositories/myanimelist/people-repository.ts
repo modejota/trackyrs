@@ -1,7 +1,10 @@
 import { eq } from "drizzle-orm";
 
-import { database, peopleTable } from "@/index";
-import type { NewPeople, People } from "@/schemas/myanimelist/people-schema";
+import { database, peopleTable } from "../../index";
+import type {
+	NewPeople,
+	People,
+} from "../../schemas/myanimelist/people-schema";
 
 export default class PeopleRepository {
 	static async findById(id: number) {

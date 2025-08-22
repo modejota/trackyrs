@@ -1,10 +1,10 @@
 import { and, eq, sql } from "drizzle-orm";
-import { database } from "@/index";
+import { database } from "../../../index";
 import {
 	type AnimeToGenre,
 	animeToGenreTable,
 	type NewAnimeToGenre,
-} from "@/schemas/myanimelist/anime/anime-to-genre-schema";
+} from "../../../schemas/myanimelist/anime/anime-to-genre-schema";
 
 export default class AnimeToGenreRepository {
 	static async insert(data: NewAnimeToGenre) {

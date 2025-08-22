@@ -1,10 +1,10 @@
 import { and, eq, sql } from "drizzle-orm";
-import { database } from "@/index";
+import { database } from "../../index";
 import {
 	type AnimeMangaRelation,
 	animeMangaRelationTable,
 	type NewAnimeMangaRelation,
-} from "@/schemas/myanimelist/anime-manga-relation";
+} from "../../schemas/myanimelist/anime-manga-relation";
 
 export default class AnimeMangaRelationRepository {
 	static async findByAnimeSource(

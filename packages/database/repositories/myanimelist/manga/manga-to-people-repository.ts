@@ -1,9 +1,9 @@
 import { eq, sql } from "drizzle-orm";
-import { database, mangaToPeopleTable } from "@/index";
+import { database, mangaToPeopleTable } from "../../../index";
 import type {
 	MangaToPeople,
 	NewMangaToPeople,
-} from "@/schemas/myanimelist/manga/manga-to-people-schema";
+} from "../../../schemas/myanimelist/manga/manga-to-people-schema";
 
 export default class MangaToPeopleRepository {
 	static async findByMangaId(mangaId: number) {

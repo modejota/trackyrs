@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
-import { characterToPeopleTable, database } from "@/index";
+import { characterToPeopleTable, database } from "../../../index";
 import type {
 	CharacterToPeople,
 	NewCharacterToPeople,
-} from "@/schemas/myanimelist/character/character-to-people-schema";
+} from "../../../schemas/myanimelist/character/character-to-people-schema";
 
 export default class CharacterToPeopleRepository {
 	static async insert(relation: NewCharacterToPeople) {

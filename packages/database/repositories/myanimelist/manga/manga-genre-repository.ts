@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { database, mangaGenreTable } from "@/index";
+import { database, mangaGenreTable } from "../../../index";
 import type {
 	MangaGenre,
 	NewMangaGenre,
-} from "@/schemas/myanimelist/manga/manga-genre-schema";
+} from "../../../schemas/myanimelist/manga/manga-genre-schema";
 
 export default class MangaGenreRepository {
 	static async findById(id: number) {

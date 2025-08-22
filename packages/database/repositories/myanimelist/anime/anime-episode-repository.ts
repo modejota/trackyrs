@@ -1,10 +1,10 @@
 import { and, eq, sql } from "drizzle-orm";
 
-import { animeEpisodeTable, database } from "@/index";
+import { animeEpisodeTable, database } from "../../../index";
 import type {
 	AnimeEpisode,
 	NewAnimeEpisode,
-} from "@/schemas/myanimelist/anime/anime-episode-schema";
+} from "../../../schemas/myanimelist/anime/anime-episode-schema";
 
 export default class AnimeEpisodeRepository {
 	static async findByAnimeIdAndEpisodeNumber(

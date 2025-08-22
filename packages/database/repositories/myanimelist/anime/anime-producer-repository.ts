@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { animeProducersTable, database } from "@/index";
+import { animeProducersTable, database } from "../../../index";
 import type {
 	NewProducer,
 	Producer,
-} from "@/schemas/myanimelist/anime/anime-producer-schema";
+} from "../../../schemas/myanimelist/anime/anime-producer-schema";
 
 export default class AnimeProducerRepository {
 	static async findById(id: number) {
