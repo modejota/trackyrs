@@ -17,6 +17,7 @@ import {
 } from "@trackyrs/ui/components/dropdown-menu";
 import { capitalize } from "@trackyrs/utils/src/string";
 import { LogOutIcon, UserPenIcon } from "lucide-react";
+import Link from "next/link";
 import { authClient, type User } from "@/lib/auth-client";
 
 interface UserMenuProps {
@@ -47,9 +48,15 @@ export default function UserMenu({ user }: UserMenuProps) {
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
-						<UserPenIcon size={16} className="opacity-60" aria-hidden="true" />
-						<span>My Profile</span>
+					<DropdownMenuItem asChild>
+						<Link href={`/profile/${user.username}`}>
+							<UserPenIcon
+								size={16}
+								className="opacity-60"
+								aria-hidden="true"
+							/>
+							<span>My Profile</span>
+						</Link>
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
