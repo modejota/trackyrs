@@ -18,3 +18,5 @@ export * from "./myanimelist/manga/manga-to-genre-schema";
 export * from "./myanimelist/manga/manga-to-magazine-schema";
 export * from "./myanimelist/manga/manga-to-people-schema";
 export * from "./myanimelist/people-schema";
+export * from "./trackyrs/user-tracks-anime-schema";
+export * from "./trackyrs/user-tracks-manga-schema";
