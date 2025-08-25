@@ -4,6 +4,7 @@ import {
 	countDistinct,
 	desc,
 	eq,
+	getTableColumns,
 	gte,
 	ilike,
 	inArray,
@@ -18,6 +19,7 @@ import type {
 	NewManga,
 } from "../../../schemas/myanimelist/manga/manga-schema";
 import { mangaToGenreTable } from "../../../schemas/myanimelist/manga/manga-to-genre-schema";
+import { userTracksMangaTable } from "../../../schemas/trackyrs/user-tracks-manga-schema";
 import type {
 	MangaStatus,
 	MangaType,
@@ -114,7 +116,37 @@ export default class MangaRepository {
 			.filter((year): year is number => year !== null);
 	}
 
-	static async findTopByReferenceScore(limit = 50, offset = 0) {
+	static async findTopByReferenceScore(
+		limit = 50,
+		offset = 0,
+		userId?: string,
+	) {
+		if (userId) {
+			return await database
+				.select({
+					...getTableColumns(mangaTable),
+					userTrackStatus: userTracksMangaTable.status,
+					userTrackScore: userTracksMangaTable.score,
+					userTrackChaptersRead: userTracksMangaTable.chaptersRead,
+				})
+				.from(mangaTable)
+				.leftJoin(
+					userTracksMangaTable,
+					and(
+						eq(userTracksMangaTable.mangaId, mangaTable.id),
+						eq(userTracksMangaTable.userId, userId),
+					),
+				)
+				.where(isNotNull(mangaTable.referenceScoredBy))
+				.orderBy(
+					sql`${mangaTable.referenceScore} IS NULL`,
+					desc(mangaTable.referenceScore),
+					asc(mangaTable.title),
+				)
+				.limit(limit)
+				.offset(offset);
+		}
+
 		return await database
 			.select()
 			.from(mangaTable)
@@ -128,16 +160,42 @@ export default class MangaRepository {
 			.offset(offset);
 	}
 
-	static async findOngoing(limit = 50, offset = 0) {
+	static async findOngoing(limit = 50, offset = 0, userId?: string) {
+		const whereClause = and(
+			eq(mangaTable.publishing, true),
+			isNotNull(mangaTable.referenceScore),
+		);
+
+		if (userId) {
+			return await database
+				.select({
+					...getTableColumns(mangaTable),
+					userTrackStatus: userTracksMangaTable.status,
+					userTrackScore: userTracksMangaTable.score,
+					userTrackChaptersRead: userTracksMangaTable.chaptersRead,
+				})
+				.from(mangaTable)
+				.leftJoin(
+					userTracksMangaTable,
+					and(
+						eq(userTracksMangaTable.mangaId, mangaTable.id),
+						eq(userTracksMangaTable.userId, userId),
+					),
+				)
+				.where(whereClause)
+				.orderBy(
+					sql`${mangaTable.referenceScore} IS NULL`,
+					desc(mangaTable.referenceScore),
+					asc(mangaTable.title),
+				)
+				.limit(limit)
+				.offset(offset);
+		}
+
 		return await database
 			.select()
 			.from(mangaTable)
-			.where(
-				and(
-					eq(mangaTable.publishing, true),
-					isNotNull(mangaTable.referenceScore),
-				),
-			)
+			.where(whereClause)
 			.orderBy(
 				sql`${mangaTable.referenceScore} IS NULL`,
 				desc(mangaTable.referenceScore),
@@ -157,6 +215,7 @@ export default class MangaRepository {
 		},
 		limit = 24,
 		offset = 0,
+		userId?: string,
 	) {
 		const conditions = [];
 
@@ -204,6 +263,32 @@ export default class MangaRepository {
 			if (filteredIds.length === 0) return [];
 
 			conditions.push(inArray(mangaTable.id, filteredIds));
+		}
+
+		if (userId) {
+			return await database
+				.select({
+					...getTableColumns(mangaTable),
+					userTrackStatus: userTracksMangaTable.status,
+					userTrackScore: userTracksMangaTable.score,
+					userTrackChaptersRead: userTracksMangaTable.chaptersRead,
+				})
+				.from(mangaTable)
+				.leftJoin(
+					userTracksMangaTable,
+					and(
+						eq(userTracksMangaTable.mangaId, mangaTable.id),
+						eq(userTracksMangaTable.userId, userId),
+					),
+				)
+				.where(conditions.length > 0 ? and(...conditions) : undefined)
+				.orderBy(
+					sql`${mangaTable.referenceScore} IS NULL`,
+					desc(mangaTable.referenceScore),
+					asc(mangaTable.title),
+				)
+				.limit(limit)
+				.offset(offset);
 		}
 
 		return await database

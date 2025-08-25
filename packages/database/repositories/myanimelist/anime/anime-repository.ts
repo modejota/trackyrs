@@ -4,6 +4,7 @@ import {
 	countDistinct,
 	desc,
 	eq,
+	getTableColumns,
 	gt,
 	gte,
 	ilike,
@@ -21,6 +22,7 @@ import type {
 } from "../../../schemas/myanimelist/anime/anime-schema";
 import { animeTable } from "../../../schemas/myanimelist/anime/anime-schema";
 import { animeToGenreTable } from "../../../schemas/myanimelist/anime/anime-to-genre-schema";
+import { userTracksAnimeTable } from "../../../schemas/trackyrs/user-tracks-anime-schema";
 import type {
 	AnimeStatus,
 	AnimeType,
@@ -114,7 +116,11 @@ export default class AnimeRepository {
 		return result.map((row) => row.id);
 	}
 
-	static async findBySeason(season: SeasonNullable, year: number | null) {
+	static async findBySeason(
+		season: SeasonNullable,
+		year: number | null,
+		userId?: string,
+	) {
 		const seasonCondition =
 			season === null
 				? isNull(animeTable.season)
@@ -122,6 +128,30 @@ export default class AnimeRepository {
 
 		const yearCondition =
 			year === null ? isNull(animeTable.year) : eq(animeTable.year, year);
+
+		if (userId) {
+			return await database
+				.select({
+					...getTableColumns(animeTable),
+					userTrackStatus: userTracksAnimeTable.status,
+					userTrackScore: userTracksAnimeTable.score,
+					userTrackEpisodesWatched: userTracksAnimeTable.episodesWatched,
+				})
+				.from(animeTable)
+				.leftJoin(
+					userTracksAnimeTable,
+					and(
+						eq(userTracksAnimeTable.animeId, animeTable.id),
+						eq(userTracksAnimeTable.userId, userId),
+					),
+				)
+				.where(and(seasonCondition, yearCondition))
+				.orderBy(
+					sql`${animeTable.referenceScore} IS NULL`,
+					desc(animeTable.referenceScore),
+					asc(animeTable.title),
+				);
+		}
 
 		return await database
 			.select()
@@ -143,7 +173,37 @@ export default class AnimeRepository {
 		return result.map((row) => row.year);
 	}
 
-	static async findTopByReferenceScore(limit = 50, offset = 0) {
+	static async findTopByReferenceScore(
+		limit = 50,
+		offset = 0,
+		userId?: string,
+	) {
+		if (userId) {
+			return await database
+				.select({
+					...getTableColumns(animeTable),
+					userTrackStatus: userTracksAnimeTable.status,
+					userTrackScore: userTracksAnimeTable.score,
+					userTrackEpisodesWatched: userTracksAnimeTable.episodesWatched,
+				})
+				.from(animeTable)
+				.leftJoin(
+					userTracksAnimeTable,
+					and(
+						eq(userTracksAnimeTable.animeId, animeTable.id),
+						eq(userTracksAnimeTable.userId, userId),
+					),
+				)
+				.where(gt(animeTable.referenceScoredBy, 0))
+				.orderBy(
+					sql`${animeTable.referenceScore} IS NULL`,
+					desc(animeTable.referenceScore),
+					asc(animeTable.title),
+				)
+				.limit(limit)
+				.offset(offset);
+		}
+
 		return await database
 			.select()
 			.from(animeTable)
@@ -168,6 +228,7 @@ export default class AnimeRepository {
 		},
 		limit = 24,
 		offset = 0,
+		userId?: string,
 	) {
 		const conditions = [];
 
@@ -215,6 +276,32 @@ export default class AnimeRepository {
 			if (filteredIds.length === 0) return [];
 
 			conditions.push(inArray(animeTable.id, filteredIds));
+		}
+
+		if (userId) {
+			return await database
+				.select({
+					...getTableColumns(animeTable),
+					userTrackStatus: userTracksAnimeTable.status,
+					userTrackScore: userTracksAnimeTable.score,
+					userTrackEpisodesWatched: userTracksAnimeTable.episodesWatched,
+				})
+				.from(animeTable)
+				.leftJoin(
+					userTracksAnimeTable,
+					and(
+						eq(userTracksAnimeTable.animeId, animeTable.id),
+						eq(userTracksAnimeTable.userId, userId),
+					),
+				)
+				.where(conditions.length > 0 ? and(...conditions) : undefined)
+				.orderBy(
+					sql`${animeTable.referenceScore} IS NULL`,
+					desc(animeTable.referenceScore),
+					asc(animeTable.title),
+				)
+				.limit(limit)
+				.offset(offset);
 		}
 
 		return await database
