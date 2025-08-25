@@ -1,12 +1,15 @@
 import AnimeGenreRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-genre-repository";
 import AnimeRepository from "@trackyrs/database/repositories/myanimelist/anime/anime-repository";
+import UserAnimeTracksRepository from "@trackyrs/database/repositories/trackyrs/user-tracks-anime-repository";
+import { UserTracksAnimeStatus } from "@trackyrs/database/types/anime-tracks";
 import {
 	AnimeStatus,
 	AnimeType,
 	Season,
 } from "@trackyrs/database/types/anime-with-relations";
 import { Hono } from "hono";
-import type { AuthType } from "@/config/auth.config";
+import { type AuthType, auth } from "@/config/auth.config";
+import { protect } from "@/middlewares/auth.middleware";
 
 interface SearchCriteria {
 	years?: number[];
@@ -17,7 +20,9 @@ interface SearchCriteria {
 	title?: string;
 }
 
-const animeController = new Hono<{ Bindings: AuthType }>();
+const animeController = new Hono<{
+	Bindings: AuthType;
+}>();
 
 animeController.get("/genres", async (c) => {
 	try {
@@ -61,8 +66,7 @@ animeController.get("/season", async (c) => {
 		return c.json({ success: false, message: "Invalid year." }, 400);
 	}
 
-	const validYearsRaw: Array<number> =
-		await AnimeRepository.findDistinctYears();
+	const validYearsRaw = await AnimeRepository.findDistinctYears();
 	const validYears = validYearsRaw.filter(
 		(y: number | null): y is number => typeof y === "number",
 	);
@@ -80,7 +84,13 @@ animeController.get("/season", async (c) => {
 	const year = parsed;
 
 	try {
-		const animes = await AnimeRepository.findBySeason(season, year);
+		const session = await auth.api.getSession({ headers: c.req.raw.headers });
+		const userId = session?.user?.id;
+		const animes = await AnimeRepository.findBySeason(
+			season,
+			year,
+			userId ?? undefined,
+		);
 
 		return c.json({
 			success: true,
@@ -134,7 +144,13 @@ animeController.get("/top", async (c) => {
 	const offset = (page - 1) * limit;
 
 	try {
-		const animes = await AnimeRepository.findTopByReferenceScore(limit, offset);
+		const session = await auth.api.getSession({ headers: c.req.raw.headers });
+		const userId = session?.user?.id;
+		const animes = await AnimeRepository.findTopByReferenceScore(
+			limit,
+			offset,
+			userId ?? undefined,
+		);
 		return c.json({
 			success: true,
 			data: {
@@ -254,7 +270,14 @@ animeController.get("/search", async (c) => {
 	const offset = (page - 1) * limit;
 
 	try {
-		const animes = await AnimeRepository.search(criteria, limit, offset);
+		const session = await auth.api.getSession({ headers: c.req.raw.headers });
+		const userId = session?.user?.id;
+		const animes = await AnimeRepository.search(
+			criteria,
+			limit,
+			offset,
+			userId ?? undefined,
+		);
 		return c.json({
 			success: true,
 			data: {
@@ -286,6 +309,214 @@ animeController.get("/:id", async (c) => {
 		return c.json({ success: true, data: anime });
 	} catch (error) {
 		return c.json({ success: false, message: "Internal Server Error" }, 500);
+	}
+});
+
+animeController.post("/:id/track", protect, async (c) => {
+	const idParam = c.req.param("id");
+	const animeId = Number.parseInt(idParam, 10);
+	if (Number.isNaN(animeId)) {
+		return c.json({ success: false, message: "Invalid anime ID" }, 400);
+	}
+
+	const anime = await AnimeRepository.findById(animeId);
+	if (!anime) {
+		return c.json({ success: false, message: "Anime not found" }, 404);
+	}
+
+	const body = await c.req.json().catch(() => ({}) as Record<string, unknown>);
+	const statusRaw = (body?.status ?? undefined) as string | undefined;
+	const scoreRaw = body?.score as number | undefined;
+	const episodesWatchedRaw = body?.episodesWatched as number | undefined;
+	const startDateRaw = body?.startDate as string | undefined;
+	const endDateRaw = body?.endDate as string | undefined;
+	const rewatchesRaw = body?.rewatches as number | undefined;
+
+	let status: UserTracksAnimeStatus | undefined;
+	if (statusRaw !== undefined) {
+		const validStatuses = Object.values(UserTracksAnimeStatus);
+		if (!validStatuses.includes(statusRaw as UserTracksAnimeStatus)) {
+			return c.json(
+				{
+					success: false,
+					message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+				},
+				400,
+			);
+		}
+		status = statusRaw as UserTracksAnimeStatus;
+	}
+
+	let score: number | undefined;
+	if (scoreRaw !== undefined) {
+		if (Number.isNaN(scoreRaw) || scoreRaw < 0 || scoreRaw > 10) {
+			return c.json(
+				{
+					success: false,
+					message: "Invalid score. Must be a number between 0 and 10",
+				},
+				400,
+			);
+		}
+
+		score = Math.round(scoreRaw * 10000) / 10000;
+	}
+
+	if (episodesWatchedRaw !== undefined) {
+		if (Number.isNaN(episodesWatchedRaw) || episodesWatchedRaw < 0) {
+			return c.json(
+				{
+					success: false,
+					message: "Invalid episodes watched. Must be a non-negative number",
+				},
+				400,
+			);
+		}
+	}
+
+	if (startDateRaw !== undefined) {
+		if (Number.isNaN(Date.parse(startDateRaw))) {
+			return c.json(
+				{
+					success: false,
+					message: "Invalid startDate. Must be an ISO timestamp string",
+				},
+				400,
+			);
+		}
+	}
+
+	if (endDateRaw !== undefined) {
+		if (Number.isNaN(Date.parse(endDateRaw))) {
+			return c.json(
+				{
+					success: false,
+					message: "Invalid endDate. Must be an ISO timestamp string",
+				},
+				400,
+			);
+		}
+	}
+
+	let rewatches: number | undefined;
+	if (rewatchesRaw !== undefined) {
+		if (Number.isNaN(rewatchesRaw) || rewatchesRaw < 0) {
+			return c.json(
+				{
+					success: false,
+					message: "Invalid rewatches. Must be a non-negative integer",
+				},
+				400,
+			);
+		}
+
+		rewatches = Math.floor(rewatchesRaw);
+	}
+
+	const user = c.get("user" as never) as { id: string } | undefined;
+	if (!user?.id) {
+		return c.json({ success: false, message: "Unauthorized" }, 401);
+	}
+
+	const existing = await UserAnimeTracksRepository.findByUserIdAndAnimeId(
+		user.id,
+		animeId,
+	);
+
+	try {
+		if (existing) {
+			const updated = await UserAnimeTracksRepository.updateByUserIdAndAnimeId(
+				user.id,
+				animeId,
+				{
+					...(status !== undefined ? { status } : {}),
+					...(score !== undefined ? { score } : {}),
+					...(episodesWatchedRaw !== undefined
+						? { episodesWatched: episodesWatchedRaw }
+						: {}),
+					...(startDateRaw !== undefined ? { startDate: startDateRaw } : {}),
+					...(endDateRaw !== undefined ? { endDate: endDateRaw } : {}),
+					...(rewatches !== undefined ? { rewatches } : {}),
+				},
+			);
+
+			return c.json({ success: true, data: { track: updated } });
+		}
+
+		const track = await UserAnimeTracksRepository.insert({
+			animeId,
+			userId: user.id,
+			status,
+			score: score,
+			episodesWatched: episodesWatchedRaw,
+			startDate: startDateRaw,
+			endDate: endDateRaw,
+			rewatches: rewatches,
+		});
+
+		return c.json({ success: true, data: { track } }, 201);
+	} catch (error) {
+		console.error(error);
+
+		return c.json(
+			{
+				success: false,
+				message: existing ? "Failed to update track" : "Failed to create track",
+			},
+			500,
+		);
+	}
+});
+
+animeController.get("/:id/track", protect, async (c) => {
+	const idParam = c.req.param("id");
+	const animeId = Number.parseInt(idParam, 10);
+	if (Number.isNaN(animeId)) {
+		return c.json({ success: false, message: "Invalid anime ID" }, 400);
+	}
+
+	const user = c.get("user" as never) as { id: string } | undefined;
+	if (!user?.id) {
+		return c.json({ success: false, message: "Unauthorized" }, 401);
+	}
+
+	try {
+		const track = await UserAnimeTracksRepository.findByUserIdAndAnimeId(
+			user.id,
+			animeId,
+		);
+		if (!track) {
+			return c.json({ success: true, data: { track: null } });
+		}
+		return c.json({ success: true, data: { track } });
+	} catch (error) {
+		return c.json({ success: false, message: "Internal Server Error" }, 500);
+	}
+});
+
+animeController.delete("/:id/track", protect, async (c) => {
+	const idParam = c.req.param("id");
+	const animeId = Number.parseInt(idParam, 10);
+	if (Number.isNaN(animeId)) {
+		return c.json({ success: false, message: "Invalid anime ID" }, 400);
+	}
+
+	const user = c.get("user" as never) as { id: string } | undefined;
+	if (!user?.id) {
+		return c.json({ success: false, message: "Unauthorized" }, 401);
+	}
+
+	try {
+		const deleted = await UserAnimeTracksRepository.deleteByUserIdAndAnimeId(
+			user.id,
+			animeId,
+		);
+		if (!deleted) {
+			return c.json({ success: false, message: "Track not found" }, 404);
+		}
+		return c.json({ success: true, data: { track: deleted } });
+	} catch (error) {
+		return c.json({ success: false, message: "Failed to delete track" }, 500);
 	}
 });
 
