@@ -1,23 +1,39 @@
 import type { Manga } from "@trackyrs/database/schemas/myanimelist/manga/manga-schema";
 import { Badge } from "@trackyrs/ui/components/badge";
+import { capitalizeSentenceWordByWord } from "@trackyrs/utils/src/string";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { UserTracksMangaStatus } from "@/app/api/manga-tracks/types";
+import { authClient } from "@/lib/auth-client";
+
+type MangaWithUserTrack = Manga & {
+	userTrackStatus?: string | null;
+	userTrackScore?: number | null;
+	userTrackChaptersRead?: number | null;
+};
 
 export function TopMangaCard({
 	manga,
 	rank,
 	showSecondaryTitle = true,
 }: {
-	manga: Manga;
+	manga: MangaWithUserTrack;
 	rank: number;
 	showSecondaryTitle?: boolean;
 }) {
+	const { data: session } = authClient.useSession();
 	const secondaryTitle = manga.titleEnglish
 		? manga.titleEnglish
 		: manga.titleJapanese;
 	const imageUrl = manga.images;
 	const score = manga.referenceScore ?? 0;
+
+	const hasUserTrack = Boolean(
+		(manga.userTrackStatus && manga.userTrackStatus.length > 0) ||
+			manga.userTrackScore != null ||
+			manga.userTrackChaptersRead != null,
+	);
 
 	return (
 		<Link href={`/manga/${manga.id}`} className="group block">
@@ -72,6 +88,39 @@ export function TopMangaCard({
 							</Badge>
 						)}
 					</div>
+
+					{session?.user && hasUserTrack && (
+						<div className="pt-1">
+							<Badge
+								variant="outline"
+								className="w-full text-[10px] sm:text-xs"
+							>
+								<div className="flex w-full items-center justify-evenly">
+									<span className="min-w-0 truncate">
+										{capitalizeSentenceWordByWord(
+											manga.userTrackStatus ?? null,
+										)}
+									</span>
+
+									{manga.userTrackStatus &&
+										manga.userTrackStatus !== UserTracksMangaStatus.COMPLETED &&
+										manga.userTrackStatus !==
+											UserTracksMangaStatus.REREADING && (
+											<span className="whitespace-nowrap">
+												Ch: {manga.userTrackChaptersRead ?? 0}
+											</span>
+										)}
+
+									{typeof manga.userTrackScore === "number" && (
+										<span className="inline-flex items-center">
+											<Star className="mr-1 h-3 w-3 fill-yellow-500 text-yellow-500" />
+											{manga.userTrackScore}
+										</span>
+									)}
+								</div>
+							</Badge>
+						</div>
+					)}
 				</div>
 			</div>
 		</Link>

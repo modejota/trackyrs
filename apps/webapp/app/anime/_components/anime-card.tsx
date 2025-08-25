@@ -1,12 +1,16 @@
 "use client";
 
-import type { Anime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
 import { Badge } from "@trackyrs/ui/components/badge";
+import { capitalizeSentenceWordByWord } from "@trackyrs/utils/src/string";
+import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { AnimeListItem } from "@/app/api/anime/types";
+import { UserTracksAnimeStatus } from "@/app/api/anime-tracks/types";
+import { authClient } from "@/lib/auth-client";
 
 interface AnimeCardProps {
-	anime: Anime;
+	anime: AnimeListItem;
 	priority?: boolean;
 	showSecondaryTitle?: boolean;
 }
@@ -16,6 +20,7 @@ export function AnimeCard({
 	priority = false,
 	showSecondaryTitle = true,
 }: AnimeCardProps) {
+	const { data: session } = authClient.useSession();
 	const secondaryTitle = anime.titleEnglish
 		? anime.titleEnglish
 		: anime.titleJapanese;
@@ -24,6 +29,12 @@ export function AnimeCard({
 	const episodeText = anime.numberEpisodes
 		? `${anime.numberEpisodes} episodes`
 		: "¿? episodes";
+
+	const hasUserTrack = Boolean(
+		(anime.userTrackStatus && anime.userTrackStatus.length > 0) ||
+			anime.userTrackScore != null ||
+			anime.userTrackEpisodesWatched != null,
+	);
 
 	return (
 		<Link href={`/anime/${anime.id}`} className="group block">
@@ -62,11 +73,44 @@ export function AnimeCard({
 							{episodeText}
 						</Badge>
 						{anime.year && (
-							<Badge variant="outline" className="ml-auto text-xs">
+							<Badge variant="secondary" className="ml-auto text-xs">
 								{anime.year}
 							</Badge>
 						)}
 					</div>
+
+					{session?.user && hasUserTrack && (
+						<div className="pt-1">
+							<Badge
+								variant="outline"
+								className="w-full text-[10px] sm:text-xs"
+							>
+								<div className="flex w-full items-center justify-evenly">
+									<span className="min-w-0 truncate">
+										{capitalizeSentenceWordByWord(
+											anime.userTrackStatus ?? null,
+										)}
+									</span>
+
+									{anime.userTrackStatus &&
+										anime.userTrackStatus !== UserTracksAnimeStatus.COMPLETED &&
+										anime.userTrackStatus !==
+											UserTracksAnimeStatus.REWATCHING && (
+											<span className="whitespace-nowrap">
+												Eps: {anime.userTrackEpisodesWatched ?? 0}
+											</span>
+										)}
+
+									{typeof anime.userTrackScore === "number" && (
+										<span className="inline-flex items-center">
+											<Star className="mr-1 h-3 w-3 fill-yellow-500 text-yellow-500" />
+											{anime.userTrackScore}
+										</span>
+									)}
+								</div>
+							</Badge>
+						</div>
+					)}
 				</div>
 			</div>
 		</Link>
