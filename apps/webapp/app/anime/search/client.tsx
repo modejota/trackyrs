@@ -165,7 +165,10 @@ export function AnimeSearchClient({
 	}));
 
 	const selectedSeasonOptions: Option[] = (criteria.seasons || []).map(
-		(season) => ({ value: season || "", label: season || "" }),
+		(season) => {
+			const opt = seasonOptions.find((o) => o.value === season);
+			return { value: season || "", label: opt?.label ?? String(season ?? "") };
+		},
 	);
 
 	const selectedTypeOptions: Option[] = (criteria.types || []).map((type) => ({

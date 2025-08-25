@@ -214,7 +214,7 @@ export function MangaSearchClient({
 						</div>
 
 						{/* Genre */}
-						<div className="flex w-full flex-col space-y-2">
+						<div className="flex w-full flex-col space-y-2 xl:col-span-2">
 							<Label className="text-muted-foreground text-sm">Genres</Label>
 							<MultipleSelector
 								value={selectedGenreOptions}
