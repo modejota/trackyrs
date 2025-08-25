@@ -8,7 +8,7 @@ import type {
 export interface AnimeSeasonApiEnvelope {
 	success: boolean;
 	data: {
-		animes: Anime[];
+		animes: AnimeListItem[];
 		season: Season;
 		year: number;
 	};
@@ -17,7 +17,7 @@ export interface AnimeSeasonApiEnvelope {
 export interface AnimeTopApiEnvelope {
 	success: boolean;
 	data: {
-		animes: Anime[];
+		animes: AnimeListItem[];
 		page: number;
 		limit: number;
 		total: number;
@@ -42,10 +42,16 @@ export interface AnimeSearchCriteria {
 export interface AnimeSearchResponse {
 	success: boolean;
 	data: {
-		animes: Anime[];
+		animes: AnimeListItem[];
 		page: number;
 		limit: number;
 		total: number;
 		hasMore: boolean;
 	};
 }
+
+export type AnimeListItem = Anime & {
+	userTrackStatus?: string | null;
+	userTrackScore?: number | null;
+	userTrackEpisodesWatched?: number | null;
+};

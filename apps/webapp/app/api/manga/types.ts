@@ -49,3 +49,9 @@ export interface MangaSearchResponse {
 		hasMore: boolean;
 	};
 }
+
+export type MangaWithUserTrack = Manga & {
+	userTrackStatus?: string | null;
+	userTrackScore?: number | null;
+	userTrackChaptersRead?: number | null;
+};

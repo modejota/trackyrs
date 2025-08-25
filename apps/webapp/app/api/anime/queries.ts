@@ -1,10 +1,10 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import type { Anime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
 import type {
 	AnimeWithRelations,
 	Season,
 } from "@trackyrs/database/types/anime-with-relations";
 import type {
+	AnimeListItem,
 	AnimeSearchCriteria,
 	AnimeSearchResponse,
 	AnimeSeasonApiEnvelope,
@@ -18,7 +18,9 @@ export function useAnimeDetails(animeId: number) {
 	return useQuery<AnimeWithRelations>({
 		queryKey: ["anime", animeId],
 		queryFn: async () => {
-			const res = await fetch(`${base}/api/anime/${animeId}`);
+			const res = await fetch(`${base}/api/anime/${animeId}`, {
+				credentials: "include",
+			});
 			if (!res.ok) throw new Error(`Failed to fetch anime: ${res.status}`);
 			const json = await res.json();
 			if (!json?.success || !json?.data)
@@ -32,7 +34,7 @@ export function useAnimeDetails(animeId: number) {
 
 export function useTopAnime(limit = 30, page = 1) {
 	return useQuery<{
-		animes: Anime[];
+		animes: AnimeListItem[];
 		page: number;
 		limit: number;
 		total: number;
@@ -41,7 +43,7 @@ export function useTopAnime(limit = 30, page = 1) {
 		queryKey: ["anime", "top", "landing", limit, page],
 		queryFn: async () => {
 			const url = `${base}/api/anime/top?limit=${limit}&page=${page}`;
-			const res = await fetch(url);
+			const res = await fetch(url, { credentials: "include" });
 			if (!res.ok) throw new Error(`Failed to fetch top anime: ${res.status}`);
 			const json: AnimeTopApiEnvelope = await res.json();
 			if (!json?.success || !json?.data)
@@ -54,13 +56,13 @@ export function useTopAnime(limit = 30, page = 1) {
 }
 
 export function useSeasonalAnime(season: Season, year: number) {
-	return useQuery<{ animes: Anime[]; season: Season; year: number }>({
+	return useQuery<{ animes: AnimeListItem[]; season: Season; year: number }>({
 		queryKey: ["anime", "season", season, year],
 		queryFn: async () => {
 			const url = `${base}/api/anime/season?season=${encodeURIComponent(
 				season,
 			)}&year=${encodeURIComponent(String(year))}`;
-			const res = await fetch(url);
+			const res = await fetch(url, { credentials: "include" });
 			if (!res.ok) throw new Error(`Failed to fetch season: ${res.status}`);
 			const json: AnimeSeasonApiEnvelope = await res.json();
 			if (!json?.success || !json?.data)
@@ -77,7 +79,9 @@ export function useAvailableYears() {
 		queryKey: ["anime", "years"],
 		queryFn: async () => {
 			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
-			const res = await fetch(`${base}/api/anime/years`);
+			const res = await fetch(`${base}/api/anime/years`, {
+				credentials: "include",
+			});
 			if (!res.ok) throw new Error(`Failed to fetch years: ${res.status}`);
 			const json: AvailableAnimeYearsApiEnvelope = await res.json();
 			if (!json?.success || !json?.data)
@@ -94,7 +98,9 @@ export function useAvailableGenres() {
 		queryKey: ["anime", "genres"],
 		queryFn: async () => {
 			const base = process.env.NEXT_PUBLIC_HONO_SERVER_URL as string;
-			const res = await fetch(`${base}/api/anime/genres`);
+			const res = await fetch(`${base}/api/anime/genres`, {
+				credentials: "include",
+			});
 			if (!res.ok) throw new Error(`Failed to fetch genres: ${res.status}`);
 			const json = await res.json();
 			if (!json?.success || !json?.data)
@@ -113,7 +119,9 @@ export function useInfiniteTopAnime(limit = 50) {
 			const params = new URLSearchParams();
 			params.append("page", String(pageParam ?? 1));
 			params.append("limit", String(limit));
-			const res = await fetch(`${base}/api/anime/top?${params.toString()}`);
+			const res = await fetch(`${base}/api/anime/top?${params.toString()}`, {
+				credentials: "include",
+			});
 			if (!res.ok) throw new Error(`Failed to fetch top anime: ${res.status}`);
 			const json: AnimeTopApiEnvelope = await res.json();
 			if (!json?.success || !json?.data)
@@ -149,7 +157,9 @@ export function useInfiniteAnimeSearch(
 			if (criteria.statuses?.length)
 				params.append("statuses", criteria.statuses.join(","));
 
-			const res = await fetch(`${base}/api/anime/search?${params.toString()}`);
+			const res = await fetch(`${base}/api/anime/search?${params.toString()}`, {
+				credentials: "include",
+			});
 			if (!res.ok)
 				throw new Error(`Failed to fetch search results: ${res.status}`);
 			const json = await res.json();

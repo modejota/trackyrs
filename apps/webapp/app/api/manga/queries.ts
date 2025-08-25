@@ -15,7 +15,9 @@ export function useMangaDetails(mangaId: number) {
 	return useQuery<MangaWithRelations>({
 		queryKey: ["manga", mangaId],
 		queryFn: async () => {
-			const res = await fetch(`${base}/api/manga/${mangaId}`);
+			const res = await fetch(`${base}/api/manga/${mangaId}`, {
+				credentials: "include",
+			});
 			if (!res.ok) throw new Error(`Failed to fetch manga: ${res.status}`);
 			const json = await res.json();
 			if (!json?.success || !json?.data)
@@ -38,7 +40,7 @@ export function useTopManga(limit = 30, page = 1) {
 		queryKey: ["manga", "top", "landing", limit, page],
 		queryFn: async () => {
 			const url = `${base}/api/manga/top?limit=${limit}&page=${page}`;
-			const res = await fetch(url);
+			const res = await fetch(url, { credentials: "include" });
 			if (!res.ok) throw new Error(`Failed to fetch top manga: ${res.status}`);
 			const json: MangaTopApiEnvelope = await res.json();
 			if (!json?.success || !json?.data)
@@ -95,7 +97,7 @@ export function useOngoingManga(limit = 30, page = 1) {
 		queryKey: ["manga", "ongoing", "landing", limit, page],
 		queryFn: async () => {
 			const url = `${base}/api/manga/ongoing?limit=${limit}&page=${page}`;
-			const res = await fetch(url);
+			const res = await fetch(url, { credentials: "include" });
 			if (!res.ok)
 				throw new Error(`Failed to fetch ongoing manga: ${res.status}`);
 			const json: MangaOngoingApiEnvelope = await res.json();
@@ -115,7 +117,9 @@ export function useInfiniteTopManga(limit = 50) {
 			const params = new URLSearchParams();
 			params.append("page", String(pageParam ?? 1));
 			params.append("limit", String(limit));
-			const res = await fetch(`${base}/api/manga/top?${params.toString()}`);
+			const res = await fetch(`${base}/api/manga/top?${params.toString()}`, {
+				credentials: "include",
+			});
 			if (!res.ok) throw new Error(`Failed to fetch top manga: ${res.status}`);
 			const json: MangaTopApiEnvelope = await res.json();
 			if (!json?.success || !json?.data)
@@ -135,7 +139,10 @@ export function useInfiniteOngoingManga(limit = 50) {
 			const params = new URLSearchParams();
 			params.append("page", String(pageParam ?? 1));
 			params.append("limit", String(limit));
-			const res = await fetch(`${base}/api/manga/ongoing?${params.toString()}`);
+			const res = await fetch(
+				`${base}/api/manga/ongoing?${params.toString()}`,
+				{ credentials: "include" },
+			);
 			if (!res.ok)
 				throw new Error(`Failed to fetch ongoing manga: ${res.status}`);
 			const json: MangaOngoingApiEnvelope = await res.json();
@@ -170,7 +177,9 @@ export function useInfiniteMangaSearch(
 			if (criteria.statuses?.length)
 				params.append("statuses", criteria.statuses.join(","));
 
-			const res = await fetch(`${base}/api/manga/search?${params.toString()}`);
+			const res = await fetch(`${base}/api/manga/search?${params.toString()}`, {
+				credentials: "include",
+			});
 			if (!res.ok)
 				throw new Error(`Failed to fetch search results: ${res.status}`);
 			const json = await res.json();
