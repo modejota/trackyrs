@@ -38,7 +38,7 @@ export function MangaCard({
 
 	return (
 		<Link href={`/manga/${manga.id}`} className="group block">
-			<div className="flex h-full flex-col overflow-hidden rounded-lg bg-card shadow transition-shadow duration-200 hover:shadow-md">
+			<div className="flex h-full flex-col overflow-hidden rounded-lg bg-card shadow transition-shadow duration-200 hover:shadow-md dark:border dark:border-white/10">
 				<div className="relative aspect-[3/4] overflow-hidden">
 					<Image
 						src={imageUrl}

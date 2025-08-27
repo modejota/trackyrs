@@ -37,14 +37,16 @@ export function TopMangaCard({
 
 	return (
 		<Link href={`/manga/${manga.id}`} className="group block">
-			<div className="relative flex h-full flex-col overflow-hidden rounded-lg bg-card shadow transition-shadow duration-200 hover:shadow-md">
+			<div className="relative flex h-full flex-col overflow-hidden rounded-lg bg-card shadow transition-shadow duration-200 hover:shadow-md dark:border dark:border-white/10">
 				{/* Badges */}
-				<div className="pointer-events-none absolute top-0 left-0 z-10 m-2 rounded bg-white/95 px-3 py-1.5 font-semibold text-gray-900 text-sm shadow-lg">
+				<div className="pointer-events-none absolute top-0 left-0 z-[5] m-2 rounded bg-card px-3 py-1.5 font-semibold text-foreground text-sm shadow-lg">
 					#{rank}
 				</div>
-				<div className="pointer-events-none absolute top-0 right-0 z-10 m-2 flex items-center gap-1 rounded bg-white/95 px-3 py-1.5 text-sm shadow-lg">
+				<div className="pointer-events-none absolute top-0 right-0 z-[5] m-2 flex items-center gap-1 rounded bg-card px-3 py-1.5 text-sm shadow-lg">
 					<Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-					<span className="font-medium text-gray-900">{score.toFixed(2)}</span>
+					<span className="font-medium text-foreground">
+						{score.toFixed(2)}
+					</span>
 				</div>
 
 				<div className="relative aspect-[3/4] overflow-hidden">

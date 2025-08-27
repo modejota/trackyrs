@@ -2,7 +2,7 @@ import { Skeleton } from "@trackyrs/ui/components/skeleton";
 
 export function CardSkeleton() {
 	return (
-		<div className="h-full overflow-hidden rounded-lg bg-card shadow">
+		<div className="h-full overflow-hidden rounded-lg bg-card shadow dark:border dark:border-white/10">
 			<Skeleton className="aspect-[3/4] w-full" />
 			<div className="space-y-2 p-3">
 				<Skeleton className="h-4 w-full" />

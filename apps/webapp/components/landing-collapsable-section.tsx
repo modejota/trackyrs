@@ -61,7 +61,7 @@ export function LandingCollapsableSection({
 
 	return (
 		<div className={`space-y-4 ${className}`}>
-			<div className="sticky top-0 z-10 mb-6 border-b bg-background py-4">
+			<div className="sticky top-0 z-20 mb-6 border-b bg-background py-4">
 				<div className="flex items-center justify-between">
 					<div>
 						<h2 className="font-bold text-2xl">{title}</h2>
