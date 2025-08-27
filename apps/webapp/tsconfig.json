@@ -4,7 +4,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"],
-			"@trackyrs/ui/*": ["../../packages/ui/src/*"]
+			"@trackyrs/ui/*": ["../../packages/ui/src/*"],
+			"@trackyrs/utils/*": ["../../packages/utils/src/*"]
 		},
 		"plugins": [
 			{
