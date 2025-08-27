@@ -5,6 +5,7 @@ import { type AuthType, auth } from "@/config/auth.config";
 import animeController from "@/controllers/anime-controller";
 import characterController from "@/controllers/character-controller";
 import mangaController from "@/controllers/manga-controller";
+import peopleController from "@/controllers/people-controller";
 import userController from "@/controllers/user-controller";
 
 const app = new Hono<{ Bindings: AuthType }>({
@@ -31,5 +32,6 @@ app.route("/api/anime", animeController);
 app.route("/api/manga", mangaController);
 app.route("/api/users", userController);
 app.route("/api/characters", characterController);
+app.route("/api/people", peopleController);
 
 export default app;
