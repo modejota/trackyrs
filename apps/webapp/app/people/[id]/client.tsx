@@ -7,9 +7,8 @@ import { PeopleContributionsSection } from "@/app/people/_components/people-cont
 import { PeopleHeroSection } from "@/app/people/_components/people-hero-section";
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
-	AnimeOrMangaHeroSkeleton,
-	AnimeOrMangaInformationSkeleton,
 	AnimeOrMangaTabsSkeleton,
+	PeopleOrCharacterHeroSkeleton,
 } from "@/components/skeletons/skeleton-components";
 
 function PeopleNotFound() {
@@ -48,8 +47,7 @@ export default function ClientPeopleDetail({ peopleId }: { peopleId: number }) {
 		return (
 			<main className="container mx-auto px-4 py-8">
 				<div className="space-y-8">
-					<AnimeOrMangaHeroSkeleton />
-					<AnimeOrMangaInformationSkeleton />
+					<PeopleOrCharacterHeroSkeleton />
 					<AnimeOrMangaTabsSkeleton />
 				</div>
 			</main>
@@ -64,8 +62,8 @@ export default function ClientPeopleDetail({ peopleId }: { peopleId: number }) {
 		<main className="container mx-auto px-4 py-8">
 			<div className="space-y-8">
 				<section aria-labelledby="people-hero-heading">
-					<ErrorBoundary fallback={<AnimeOrMangaHeroSkeleton />}>
-						<Suspense fallback={<AnimeOrMangaHeroSkeleton />}>
+					<ErrorBoundary fallback={<PeopleOrCharacterHeroSkeleton />}>
+						<Suspense fallback={<PeopleOrCharacterHeroSkeleton />}>
 							<PeopleHeroSection data={data.people} />
 						</Suspense>
 					</ErrorBoundary>

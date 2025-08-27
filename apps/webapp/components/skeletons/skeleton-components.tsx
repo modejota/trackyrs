@@ -126,3 +126,45 @@ export function AnimeOrMangaInformationSkeleton() {
 		</section>
 	);
 }
+
+export function PeopleOrCharacterHeroSkeleton() {
+	return (
+		<div className="flex flex-col lg:flex-row">
+			{/* Image Section */}
+			<div className="relative h-96 w-full flex-shrink-0 lg:h-auto lg:w-80">
+				<Skeleton className="h-full w-full" />
+			</div>
+
+			{/* Content Section */}
+			<div className="flex-1 p-6 lg:p-8">
+				<div className="space-y-4">
+					{/* Title */}
+					<div className="space-y-2">
+						<Skeleton className="h-8 w-3/4" />
+						<Skeleton className="h-6 w-1/2" />
+						<Skeleton className="h-4 w-1/3" />
+					</div>
+
+					{/* Badges */}
+					<div className="flex flex-wrap gap-2">
+						{["badge-1", "badge-2", "badge-3", "badge-4", "badge-5"].map(
+							(key) => (
+								<Skeleton key={key} className="h-6 w-16" />
+							),
+						)}
+					</div>
+
+					{/* Synopsis */}
+					<div className="space-y-2">
+						<Skeleton className="h-6 w-24" />
+						<div className="space-y-2">
+							<Skeleton className="h-4 w-full" />
+							<Skeleton className="h-4 w-full" />
+							<Skeleton className="h-4 w-3/4" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}

@@ -8,10 +8,9 @@ import { CharacterHeroSection } from "@/app/characters/_components/character-her
 import { CharacterVoiceActorsSection } from "@/app/characters/_components/character-voice-actors-section";
 import { ErrorBoundary } from "@/components/error-boundary";
 import {
-	AnimeOrMangaHeroSkeleton,
 	AnimeOrMangaInformationSkeleton,
-	AnimeOrMangaInfoSkeleton,
 	AnimeOrMangaTabsSkeleton,
+	PeopleOrCharacterHeroSkeleton,
 } from "@/components/skeletons/skeleton-components";
 
 function CharacterNotFound() {
@@ -58,9 +57,8 @@ export default function ClientCharacterDetail({
 		return (
 			<main className="container mx-auto px-4 py-8">
 				<div className="space-y-8">
-					<AnimeOrMangaHeroSkeleton />
+					<PeopleOrCharacterHeroSkeleton />
 					<AnimeOrMangaInformationSkeleton />
-					<AnimeOrMangaInfoSkeleton />
 					<AnimeOrMangaTabsSkeleton />
 				</div>
 			</main>
@@ -75,8 +73,8 @@ export default function ClientCharacterDetail({
 		<main className="container mx-auto px-4 py-8">
 			<div className="space-y-8">
 				<section aria-labelledby="character-hero-heading">
-					<ErrorBoundary fallback={<AnimeOrMangaHeroSkeleton />}>
-						<Suspense fallback={<AnimeOrMangaHeroSkeleton />}>
+					<ErrorBoundary fallback={<PeopleOrCharacterHeroSkeleton />}>
+						<Suspense fallback={<PeopleOrCharacterHeroSkeleton />}>
 							<CharacterHeroSection data={characterData.character} />
 						</Suspense>
 					</ErrorBoundary>
