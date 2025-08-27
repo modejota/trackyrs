@@ -26,3 +26,14 @@ export interface MangaAppearance {
 	manga: Manga;
 	role: MangaCharacterRole;
 }
+
+export interface CharacterSearchEnvelope {
+	success: boolean;
+	data: {
+		characters: Character[];
+		page: number;
+		limit: number;
+		total: number;
+		hasMore: boolean;
+	};
+}
