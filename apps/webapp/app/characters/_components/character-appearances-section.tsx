@@ -117,6 +117,7 @@ export function CharacterAppearancesSection({
 						aria-label="Appearances"
 					>
 						<TabsTrigger
+							id="anime-appearances-tab"
 							value="anime"
 							className="relative flex min-h-[44px] items-center gap-2 rounded-none px-3 py-2 text-sm after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary sm:text-base"
 							role="tab"
@@ -130,6 +131,7 @@ export function CharacterAppearancesSection({
 							)}
 						</TabsTrigger>
 						<TabsTrigger
+							id="manga-appearances-tab"
 							value="manga"
 							className="relative flex min-h-[44px] items-center gap-2 rounded-none px-3 py-2 text-sm after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary sm:text-base"
 							role="tab"
@@ -151,14 +153,20 @@ export function CharacterAppearancesSection({
 						id="anime-appearances-panel"
 						aria-labelledby="anime-appearances-tab"
 					>
-						<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-							{animeAppearances.map((appearance) => (
-								<AnimeAppearanceCard
-									key={`anime-${appearance.anime.id}`}
-									appearance={appearance}
-								/>
-							))}
-						</div>
+						{animeAppearances.length === 0 ? (
+							<div className="py-8 text-center text-muted-foreground text-sm">
+								No appearances in animes.
+							</div>
+						) : (
+							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+								{animeAppearances.map((appearance) => (
+									<AnimeAppearanceCard
+										key={`anime-${appearance.anime.id}`}
+										appearance={appearance}
+									/>
+								))}
+							</div>
+						)}
 					</TabsContent>
 
 					<TabsContent
@@ -168,32 +176,22 @@ export function CharacterAppearancesSection({
 						id="manga-appearances-panel"
 						aria-labelledby="manga-appearances-tab"
 					>
-						<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-							{mangaAppearances.map((appearance) => (
-								<MangaAppearanceCard
-									key={`manga-${appearance.manga.id}`}
-									appearance={appearance}
-								/>
-							))}
-						</div>
+						{mangaAppearances.length === 0 ? (
+							<div className="py-8 text-center text-muted-foreground text-sm">
+								No appearances in mangas.
+							</div>
+						) : (
+							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+								{mangaAppearances.map((appearance) => (
+									<MangaAppearanceCard
+										key={`manga-${appearance.manga.id}`}
+										appearance={appearance}
+									/>
+								))}
+							</div>
+						)}
 					</TabsContent>
 				</Tabs>
-
-				{animeAppearances.length > 0 && mangaAppearances.length === 0 && (
-					<div className="py-4 text-center" aria-live="polite">
-						<p className="text-muted-foreground text-sm">
-							Only anime appearances are available for this character.
-						</p>
-					</div>
-				)}
-
-				{mangaAppearances.length > 0 && animeAppearances.length === 0 && (
-					<div className="py-4 text-center" aria-live="polite">
-						<p className="text-muted-foreground text-sm">
-							Only manga appearances are available for this character.
-						</p>
-					</div>
-				)}
 			</div>
 		</section>
 	);

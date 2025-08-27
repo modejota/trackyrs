@@ -19,4 +19,10 @@ export const navigationLinks = [
 			{ href: "/manga/top", label: "Top Mangas" },
 		],
 	},
+	{
+		label: "Others",
+		submenu: true,
+		type: "simple",
+		items: [{ href: "/characters/search", label: "Search Characters" }],
+	},
 ];
