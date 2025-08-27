@@ -4,6 +4,7 @@ import { Toaster } from "@trackyrs/ui/components/sonner";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Navbar } from "@/components/navbar/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 import Providers from "@/providers";
 
 const geistSans = localFont({
@@ -26,11 +27,18 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
-				<Navbar />
-				<Providers>{children}</Providers>
-				<Toaster />
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					<Navbar />
+					<Providers>{children}</Providers>
+					<Toaster />
+				</ThemeProvider>
 			</body>
 		</html>
 	);

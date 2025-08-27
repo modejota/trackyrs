@@ -19,6 +19,7 @@ import { capitalize } from "@trackyrs/utils/src/string";
 import { LogOutIcon, UserPenIcon } from "lucide-react";
 import Link from "next/link";
 import { authClient, type User } from "@/lib/auth-client";
+import ThemeToggle from "./theme-toggle";
 
 interface UserMenuProps {
 	user: User;
@@ -59,6 +60,13 @@ export default function UserMenu({ user }: UserMenuProps) {
 						</Link>
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					onSelect={(e) => e.preventDefault()}
+					className="justify-between"
+				>
+					<ThemeToggle />
+				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onSelect={() => void authClient.signOut()}>
 					<LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
