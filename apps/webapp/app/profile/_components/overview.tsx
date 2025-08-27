@@ -184,7 +184,7 @@ export function OverviewTab() {
 	}
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 py-6">
 			<section className="space-y-3">
 				<h3 className="font-semibold text-lg md:text-xl">Anime</h3>
 				<p className="flex flex-wrap items-center gap-x-1 text-sm">

@@ -14,6 +14,7 @@ import {
 import { AnimeTab } from "@/app/profile/_components/anime-tab";
 import { MangaTab } from "@/app/profile/_components/manga-tab";
 import { OverviewTab } from "@/app/profile/_components/overview";
+import { ProfileLoadingSkeleton } from "../_components/profile-loading-skeleton";
 
 export default function ClientProfile({ username }: { username: string }) {
 	const { data, isLoading, isError } = useUserByUsername(username);
@@ -23,12 +24,7 @@ export default function ClientProfile({ username }: { username: string }) {
 		useProfileMangaLists(username);
 
 	if (isLoading) {
-		return (
-			<main className="container mx-auto px-4 py-8">
-				<div className="h-8 w-48 animate-pulse rounded bg-muted" />
-				<div className="mt-6 h-10 w-full animate-pulse rounded bg-muted" />
-			</main>
-		);
+		return <ProfileLoadingSkeleton />;
 	}
 
 	if (isError || !data) {
