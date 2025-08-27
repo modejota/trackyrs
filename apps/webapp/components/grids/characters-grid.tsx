@@ -3,6 +3,7 @@ import type { CharacterWithRole as MangaCharacterWithRole } from "@trackyrs/data
 import { Badge } from "@trackyrs/ui/components/badge";
 import { UsersRound } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CharactersGridProps {
 	characters: AnimeCharacterWithRole[] | MangaCharacterWithRole[];
@@ -18,7 +19,10 @@ function CharacterCard({ data, isMain = false }: CharacterCardProps) {
 	const role = data.role;
 
 	return (
-		<div className="h-full overflow-hidden rounded-lg border bg-card shadow transition-shadow duration-200 hover:shadow-md">
+		<Link
+			href={`/characters/${data.character.id}`}
+			className="group block h-full overflow-hidden rounded-lg border bg-card shadow transition-all duration-200 hover:bg-accent hover:shadow-md"
+		>
 			<div
 				className={`relative ${isMain ? "aspect-[3/4]" : "aspect-[3/4]"} overflow-hidden`}
 			>
@@ -26,18 +30,19 @@ function CharacterCard({ data, isMain = false }: CharacterCardProps) {
 					src={data.character.images}
 					alt={`${data.character.name || "Character"} - ${role} character`}
 					fill
-					className="object-cover"
+					className="object-cover transition-transform duration-200 group-hover:scale-105"
 					sizes={
 						isMain
 							? "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 							: "(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
 					}
 				/>
+				<div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity group-hover:opacity-100" />
 			</div>
 
 			<div className={`${isMain ? "p-3" : "p-2"} space-y-1`}>
 				<h4
-					className={`font-medium leading-tight ${isMain ? "text-sm sm:text-base" : "text-xs sm:text-sm"} truncate`}
+					className={`font-medium leading-tight ${isMain ? "text-sm sm:text-base" : "text-xs sm:text-sm"} truncate transition-colors group-hover:text-primary`}
 					title={data.character.name || "Unknown Character"}
 				>
 					{data.character.name || "Unknown Character"}
@@ -69,7 +74,7 @@ function CharacterCard({ data, isMain = false }: CharacterCardProps) {
 					</ul>
 				)}
 			</div>
-		</div>
+		</Link>
 	);
 }
 
