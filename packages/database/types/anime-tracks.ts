@@ -1,3 +1,5 @@
+import type { animeTable } from "../schemas/myanimelist/anime/anime-schema";
+
 export enum UserTracksAnimeStatus {
 	WATCHING = "WATCHING",
 	COMPLETED = "COMPLETED",
@@ -6,10 +8,6 @@ export enum UserTracksAnimeStatus {
 	PLAN_TO_WATCH = "PLAN_TO_WATCH",
 	REWATCHING = "REWATCHING",
 }
-
-// Type used by repositories when returning grouped anime track items
-// Import type-only to avoid runtime cycles
-import type { animeTable } from "../schemas/myanimelist/anime/anime-schema";
 
 export type UserTracksAnimeGroupedItem = {
 	animeId: number;
@@ -21,4 +19,7 @@ export type UserTracksAnimeGroupedItem = {
 	score: number | null;
 	status: string | null;
 	genres: string[] | null;
+	episodesWatched?: number | null;
+	duration?: number | null; // seconds per episode
+	numberEpisodes?: number | null;
 };

@@ -94,11 +94,14 @@ export default class UserTracksAnimeRepository {
 				status: userTracksAnimeTable.status,
 				animeId: userTracksAnimeTable.animeId,
 				score: userTracksAnimeTable.score,
+				episodesWatched: userTracksAnimeTable.episodesWatched,
 				title: animeTable.title,
 				images: animeTable.images,
 				type: animeTable.type,
 				season: animeTable.season,
 				year: animeTable.year,
+				duration: animeTable.duration,
+				numberEpisodes: animeTable.numberEpisodes,
 				genres: sql<
 					string[]
 				>`coalesce(array_agg(distinct ${animeGenreTable.name}) FILTER (WHERE ${animeGenreTable.name} IS NOT NULL), '{}')`,
@@ -115,11 +118,14 @@ export default class UserTracksAnimeRepository {
 				userTracksAnimeTable.status,
 				userTracksAnimeTable.animeId,
 				userTracksAnimeTable.score,
+				userTracksAnimeTable.episodesWatched,
 				animeTable.title,
 				animeTable.images,
 				animeTable.type,
 				animeTable.season,
 				animeTable.year,
+				animeTable.duration,
+				animeTable.numberEpisodes,
 			);
 
 		const initial: Record<UserTracksAnimeStatus, UserTracksAnimeGroupedItem[]> =
@@ -143,6 +149,9 @@ export default class UserTracksAnimeRepository {
 				score: r.score ?? null,
 				status: r.status ?? null,
 				genres: (r.genres ?? []) as string[] | null,
+				episodesWatched: r.episodesWatched ?? null,
+				duration: r.duration ?? null,
+				numberEpisodes: r.numberEpisodes ?? null,
 			};
 			const status =
 				(item.status as UserTracksAnimeStatus) ??
