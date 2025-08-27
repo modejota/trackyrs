@@ -23,6 +23,9 @@ export const navigationLinks = [
 		label: "Others",
 		submenu: true,
 		type: "simple",
-		items: [{ href: "/characters/search", label: "Search Characters" }],
+		items: [
+			{ href: "/characters/search", label: "Search Characters" },
+			{ href: "/people/search", label: "Search People" },
+		],
 	},
 ];

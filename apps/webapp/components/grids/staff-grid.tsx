@@ -1,13 +1,9 @@
 import type { StaffWithRole as AnimeStaffWithRole } from "@trackyrs/database/types/anime-with-relations";
 import type { StaffWithRole as MangaStaffWithRole } from "@trackyrs/database/types/manga-with-relations";
 import { Badge } from "@trackyrs/ui/components/badge";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@trackyrs/ui/components/tooltip";
 import { UsersRound } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface StaffGridProps {
 	staff: AnimeStaffWithRole[] | MangaStaffWithRole[];
@@ -27,7 +23,10 @@ function StaffCard({ data, isMain = false }: StaffCardProps) {
 		: [];
 
 	return (
-		<div className="h-full overflow-hidden rounded-lg border bg-card shadow transition-shadow duration-200 hover:shadow-md">
+		<Link
+			href={`/people/${data.people.id}`}
+			className="block h-full overflow-hidden rounded-lg border bg-card shadow transition-shadow duration-200 hover:shadow-md"
+		>
 			<div
 				className={`relative ${isMain ? "aspect-[3/4]" : "aspect-[3/4]"} overflow-hidden`}
 			>
@@ -77,7 +76,7 @@ function StaffCard({ data, isMain = false }: StaffCardProps) {
 					</ul>
 				)}
 			</div>
-		</div>
+		</Link>
 	);
 }
 
