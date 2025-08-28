@@ -1,4 +1,4 @@
-import { asc, eq, ilike } from "drizzle-orm";
+import { asc, desc, eq, ilike } from "drizzle-orm";
 
 import { database } from "../../index";
 import { animeTable } from "../../schemas/myanimelist/anime/anime-schema";
@@ -120,7 +120,7 @@ export default class PeopleRepository {
 			.select()
 			.from(peopleTable)
 			.where(ilike(peopleTable.name, pattern))
-			.orderBy(asc(peopleTable.name))
+			.orderBy(desc(peopleTable.referenceFavorites), asc(peopleTable.name))
 			.limit(limit)
 			.offset(offset);
 	}

@@ -1,4 +1,4 @@
-import { asc, eq, ilike } from "drizzle-orm";
+import { asc, desc, eq, ilike } from "drizzle-orm";
 
 import { database } from "../../../index";
 import { animeTable } from "../../../schemas/myanimelist/anime/anime-schema";
@@ -125,7 +125,10 @@ export default class CharacterRepository {
 			.select()
 			.from(characterTable)
 			.where(ilike(characterTable.name, pattern))
-			.orderBy(asc(characterTable.name))
+			.orderBy(
+				desc(characterTable.referenceFavorites),
+				asc(characterTable.name),
+			)
 			.limit(limit)
 			.offset(offset);
 	}
