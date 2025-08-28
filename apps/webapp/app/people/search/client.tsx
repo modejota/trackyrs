@@ -74,6 +74,7 @@ export default function PeopleSearchClient() {
 		isFetchingNextPage,
 		isLoading,
 		isError,
+		refetch,
 	} = useInfinitePeopleSearch(debouncedName);
 
 	const allPeople = useMemo(
@@ -183,13 +184,22 @@ export default function PeopleSearchClient() {
 			{debouncedName ? (
 				<div className="space-y-4">
 					{isLoading ? null : isError ? (
-						<div className="text-center">
-							<div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-muted p-6">
-								<CircleX className="h-10 w-10 text-muted-foreground" />
+						<div className="py-12 text-center">
+							<div className="mx-auto max-w-md">
+								<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">
+									<CircleX className="h-7 w-7 text-muted-foreground" />
+								</div>
+								<h3 className="mb-2 font-semibold text-lg">
+									Couldn’t load people results
+								</h3>
+								<p className="text-muted-foreground text-sm">
+									There was an error while loading people search results. Please
+									try again.
+								</p>
+								<div className="mt-4">
+									<Button onClick={() => refetch()}>Try again</Button>
+								</div>
 							</div>
-							<h3 className="mb-2 font-semibold text-lg text-red-500">
-								Failed to load search results
-							</h3>
 						</div>
 					) : allPeople.length === 0 ? (
 						<div className="text-center">
