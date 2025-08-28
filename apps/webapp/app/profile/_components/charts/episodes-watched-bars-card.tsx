@@ -52,8 +52,18 @@ export function EpisodesWatchedBarsCard({
 								style: { fill: "hsl(var(--muted-foreground))", fontSize: 12 },
 							}}
 						/>
-						<ChartTooltip content={<ChartTooltipContent />} />
-						<Bar dataKey="value" radius={4}>
+						<ChartTooltip
+							content={
+								<ChartTooltipContent
+									labelFormatter={(label?: string | number) =>
+										label !== undefined && label !== null
+											? `Episodes: ${label}`
+											: ""
+									}
+								/>
+							}
+						/>
+						<Bar dataKey="value" name="Animes" radius={4}>
 							{data.map((d) => (
 								<Cell key={`cell-ep-${d.label}`} fill="#60a5fa" />
 							))}
