@@ -404,13 +404,22 @@ export function AnimeSearchClient({
 							</div>
 						</div>
 					) : uniqueAnimes.length === 0 ? (
-						<div className="text-center">
-							<div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-muted p-6">
-								<Search className="h-10 w-10 text-muted-foreground" />
+						<div className="py-12 text-center">
+							<div className="mx-auto max-w-md">
+								<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">
+									<Search className="h-7 w-7 text-muted-foreground" />
+								</div>
+								<h3 className="mb-2 font-semibold text-lg">No anime found</h3>
+								<p className="text-muted-foreground text-sm">
+									No results match your filters. Try adjusting your filters or
+									search terms.
+								</p>
+								<div className="mt-4">
+									<Button variant="outline" onClick={handleReset}>
+										Reset filters
+									</Button>
+								</div>
 							</div>
-							<h3 className="mb-2 font-semibold text-lg">
-								No anime found with the specified filters
-							</h3>
 						</div>
 					) : (
 						<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
