@@ -1,6 +1,12 @@
 "use client";
 
 import { Season } from "@trackyrs/database/types/anime-with-relations";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@trackyrs/ui/components/accordion";
 import { Button } from "@trackyrs/ui/components/button";
 import { Card, CardContent } from "@trackyrs/ui/components/card";
 import { Input } from "@trackyrs/ui/components/input";
@@ -117,104 +123,138 @@ export function AnimeTab({ animeLists, isLoading }: AnimeTabProps) {
 
 	return (
 		<div className="space-y-6">
-			{/* Filters (match search layout and styles) */}
-			<Card className="border-0 bg-transparent shadow-none">
-				<CardContent className="space-y-4 p-0">
-					<div className="grid w-full grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
-						{/* Title */}
-						<div className="flex w-full flex-col space-y-2 xl:col-span-2">
-							<Label htmlFor="title" className="text-muted-foreground text-sm">
-								Title
-							</Label>
-							<div className="relative w-full">
-								<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
-								<Input
-									id="title"
-									placeholder="Type an anime title..."
-									value={criteria.title}
-									onChange={(e) =>
-										setCriteria((c) => ({ ...c, title: e.target.value }))
-									}
-									className="h-[38px] border border-input bg-white py-0 pl-10 leading-[38px]"
-								/>
+			{/* Filters */}
+			{(() => {
+				const Filters = () => (
+					<Card className="border-0 bg-transparent shadow-none">
+						<CardContent className="space-y-4 p-0">
+							<div className="grid w-full grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
+								{/* Title */}
+								<div className="flex w-full flex-col space-y-2 xl:col-span-2">
+									<Label
+										htmlFor="title"
+										className="text-muted-foreground text-sm"
+									>
+										Title
+									</Label>
+									<div className="relative w-full">
+										<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
+										<Input
+											id="title"
+											placeholder="Type an anime title..."
+											value={criteria.title}
+											onChange={(e) =>
+												setCriteria((c) => ({ ...c, title: e.target.value }))
+											}
+											className="h-[38px] border border-input bg-background py-0 pl-10 leading-[38px]"
+										/>
+									</div>
+								</div>
+
+								{/* Genres */}
+								<div className="flex w-full flex-col space-y-2 xl:col-span-3">
+									<Label className="text-muted-foreground text-sm">
+										Genres
+									</Label>
+									<MultipleSelector
+										value={criteria.genres}
+										onChange={(opts) =>
+											setCriteria((c) => ({ ...c, genres: opts }))
+										}
+										options={genreOptions}
+										placeholder="Select genres..."
+										commandProps={{ label: "Select genres" }}
+										emptyIndicator={
+											<p className="text-center text-sm">No genres found</p>
+										}
+										hideClearAllButton={false}
+										hidePlaceholderWhenSelected={true}
+										className="min-h-[38px] bg-background"
+									/>
+								</div>
+
+								{/* Season */}
+								<div className="flex w-full flex-col space-y-2">
+									<Label
+										htmlFor="season"
+										className="text-muted-foreground text-sm"
+									>
+										Season
+									</Label>
+									<MultipleSelector
+										value={criteria.seasons}
+										onChange={(opts) =>
+											setCriteria((c) => ({ ...c, seasons: opts }))
+										}
+										defaultOptions={seasonOptions}
+										placeholder="Select seasons..."
+										commandProps={{ label: "Select seasons" }}
+										emptyIndicator={
+											<p className="text-center text-sm">No seasons found</p>
+										}
+										hideClearAllButton={false}
+										hidePlaceholderWhenSelected={true}
+										className="min-h-[38px] bg-background"
+									/>
+								</div>
+
+								{/* Year */}
+								<div className="flex w-full flex-col space-y-2 xl:col-span-1">
+									<Label
+										htmlFor="year"
+										className="text-muted-foreground text-sm"
+									>
+										Year
+									</Label>
+									<MultipleSelector
+										value={criteria.years}
+										onChange={(opts) =>
+											setCriteria((c) => ({ ...c, years: opts }))
+										}
+										options={yearOptions}
+										placeholder="Select years..."
+										commandProps={{ label: "Select years" }}
+										emptyIndicator={
+											<p className="text-center text-sm">No years found</p>
+										}
+										hideClearAllButton={false}
+										hidePlaceholderWhenSelected={true}
+										className="min-h-[38px] bg-background"
+									/>
+								</div>
+
+								{/* Reset Button */}
+								<div className="flex w-full flex-col space-y-2 xl:col-span-1">
+									<Button
+										variant="outline"
+										onClick={handleReset}
+										className="h-[38px] w-full bg-background"
+									>
+										Reset
+									</Button>
+								</div>
 							</div>
+						</CardContent>
+					</Card>
+				);
+
+				return (
+					<>
+						{/* Mobile: collapsible filters */}
+						<div className="md:hidden">
+							<Accordion type="single" collapsible defaultValue="filters">
+								<AccordionItem value="filters">
+									<AccordionTrigger>Filters</AccordionTrigger>
+									<AccordionContent>{Filters()}</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 						</div>
 
-						{/* Genres */}
-						<div className="flex w-full flex-col space-y-2 xl:col-span-3">
-							<Label className="text-muted-foreground text-sm">Genres</Label>
-							<MultipleSelector
-								value={criteria.genres}
-								onChange={(opts) =>
-									setCriteria((c) => ({ ...c, genres: opts }))
-								}
-								options={genreOptions}
-								placeholder="Select genres..."
-								commandProps={{ label: "Select genres" }}
-								emptyIndicator={
-									<p className="text-center text-sm">No genres found</p>
-								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
-							/>
-						</div>
-
-						{/* Season */}
-						<div className="flex w-full flex-col space-y-2">
-							<Label htmlFor="season" className="text-muted-foreground text-sm">
-								Season
-							</Label>
-							<MultipleSelector
-								value={criteria.seasons}
-								onChange={(opts) =>
-									setCriteria((c) => ({ ...c, seasons: opts }))
-								}
-								defaultOptions={seasonOptions}
-								placeholder="Select seasons..."
-								commandProps={{ label: "Select seasons" }}
-								emptyIndicator={
-									<p className="text-center text-sm">No seasons found</p>
-								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
-							/>
-						</div>
-
-						{/* Year */}
-						<div className="flex w-full flex-col space-y-2 xl:col-span-1">
-							<Label htmlFor="year" className="text-muted-foreground text-sm">
-								Year
-							</Label>
-							<MultipleSelector
-								value={criteria.years}
-								onChange={(opts) => setCriteria((c) => ({ ...c, years: opts }))}
-								options={yearOptions}
-								placeholder="Select years..."
-								commandProps={{ label: "Select years" }}
-								emptyIndicator={
-									<p className="text-center text-sm">No years found</p>
-								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
-							/>
-						</div>
-
-						{/* Reset Button */}
-						<div className="flex w-full flex-col space-y-2 xl:col-span-1">
-							<Button
-								variant="outline"
-								onClick={handleReset}
-								className="h-[38px] w-full"
-							>
-								Reset
-							</Button>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+						{/* Desktop: always visible filters */}
+						<div className="hidden md:block">{Filters()}</div>
+					</>
+				);
+			})()}
 
 			{/* Collapsible tables per status */}
 			<div className="space-y-4">

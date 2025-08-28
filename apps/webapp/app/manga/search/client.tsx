@@ -4,6 +4,12 @@ import {
 	MangaStatus,
 	MangaType,
 } from "@trackyrs/database/types/manga-with-relations";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@trackyrs/ui/components/accordion";
 import { Button } from "@trackyrs/ui/components/button";
 import { Card, CardContent } from "@trackyrs/ui/components/card";
 import { Input } from "@trackyrs/ui/components/input";
@@ -188,130 +194,144 @@ export function MangaSearchClient({
 		};
 	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-	return (
-		<div className="space-y-6">
-			{/* Search Filters */}
-			<Card className="border-0 bg-transparent shadow-none">
-				<CardContent className="space-y-4 p-0">
-					<div className="grid w-full grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
-						{/* Title */}
-						<div className="flex w-full flex-col space-y-2 xl:col-span-2">
-							<Label htmlFor="title" className="text-muted-foreground text-sm">
-								Title
-							</Label>
-							<div className="relative w-full">
-								<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
-								<Input
-									id="title"
-									placeholder="Type a manga title..."
-									value={criteria.title || ""}
-									onChange={(e) =>
-										handleCriteriaChange({ title: e.target.value })
-									}
-									className="h-[38px] border border-input bg-white py-0 pl-10 leading-[38px]"
-								/>
-							</div>
-						</div>
-
-						{/* Genre */}
-						<div className="flex w-full flex-col space-y-2 xl:col-span-2">
-							<Label className="text-muted-foreground text-sm">Genres</Label>
-							<MultipleSelector
-								value={selectedGenreOptions}
-								onChange={handleGenreChange}
-								options={genreOptions}
-								placeholder="Select genres..."
-								commandProps={{
-									label: "Select genres",
-								}}
-								emptyIndicator={
-									<p className="text-center text-sm">No genres found</p>
+	const Filters = () => (
+		<Card className="border-0 bg-transparent shadow-none">
+			<CardContent className="space-y-4 p-0">
+				<div className="grid w-full grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
+					{/* Title */}
+					<div className="flex w-full flex-col space-y-2 xl:col-span-2">
+						<Label htmlFor="title" className="text-muted-foreground text-sm">
+							Title
+						</Label>
+						<div className="relative w-full">
+							<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
+							<Input
+								id="title"
+								placeholder="Type a manga title..."
+								value={criteria.title || ""}
+								onChange={(e) =>
+									handleCriteriaChange({ title: e.target.value })
 								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
+								className="h-[38px] border border-input bg-background py-0 pl-10 leading-[38px]"
 							/>
-						</div>
-
-						{/* Year */}
-						<div className="flex w-full flex-col space-y-2">
-							<Label htmlFor="year" className="text-muted-foreground text-sm">
-								Year
-							</Label>
-							<MultipleSelector
-								value={selectedYearOptions}
-								onChange={handleYearChange}
-								options={yearOptions}
-								placeholder="Select years..."
-								commandProps={{
-									label: "Select years",
-								}}
-								emptyIndicator={
-									<p className="text-center text-sm">No years found</p>
-								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
-							/>
-						</div>
-
-						{/* Format */}
-						<div className="flex w-full flex-col space-y-2">
-							<Label htmlFor="format" className="text-muted-foreground text-sm">
-								Format
-							</Label>
-							<MultipleSelector
-								value={selectedTypeOptions}
-								onChange={handleTypeChange}
-								defaultOptions={typeOptions}
-								placeholder="Select formats..."
-								commandProps={{
-									label: "Select formats",
-								}}
-								emptyIndicator={
-									<p className="text-center text-sm">No formats found</p>
-								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
-							/>
-						</div>
-
-						{/* Publishing Status */}
-						<div className="flex w-full flex-col space-y-2">
-							<Label htmlFor="status" className="text-muted-foreground text-sm">
-								Publishing Status
-							</Label>
-							<MultipleSelector
-								value={selectedStatusOptions}
-								onChange={handleStatusChange}
-								defaultOptions={statusOptions}
-								placeholder="Select statuses..."
-								commandProps={{
-									label: "Select statuses",
-								}}
-								emptyIndicator={
-									<p className="text-center text-sm">No statuses found</p>
-								}
-								hideClearAllButton={false}
-								hidePlaceholderWhenSelected={true}
-								className="min-h-[38px]"
-							/>
-						</div>
-
-						{/* Reset Button */}
-						<div className="flex w-full flex-col space-y-2">
-							<Button
-								variant="outline"
-								onClick={handleReset}
-								className="h-[38px] w-full xl:w-1/2"
-							>
-								Reset
-							</Button>
 						</div>
 					</div>
-				</CardContent>
-			</Card>
+
+					{/* Genre */}
+					<div className="flex w-full flex-col space-y-2 xl:col-span-2">
+						<Label className="text-muted-foreground text-sm">Genres</Label>
+						<MultipleSelector
+							value={selectedGenreOptions}
+							onChange={handleGenreChange}
+							options={genreOptions}
+							placeholder="Select genres..."
+							commandProps={{
+								label: "Select genres",
+							}}
+							emptyIndicator={
+								<p className="text-center text-sm">No genres found</p>
+							}
+							hideClearAllButton={false}
+							hidePlaceholderWhenSelected={true}
+							className="min-h-[38px] bg-background"
+						/>
+					</div>
+
+					{/* Year */}
+					<div className="flex w-full flex-col space-y-2">
+						<Label htmlFor="year" className="text-muted-foreground text-sm">
+							Year
+						</Label>
+						<MultipleSelector
+							value={selectedYearOptions}
+							onChange={handleYearChange}
+							options={yearOptions}
+							placeholder="Select years..."
+							commandProps={{
+								label: "Select years",
+							}}
+							emptyIndicator={
+								<p className="text-center text-sm">No years found</p>
+							}
+							hideClearAllButton={false}
+							hidePlaceholderWhenSelected={true}
+							className="min-h-[38px] bg-background"
+						/>
+					</div>
+
+					{/* Format */}
+					<div className="flex w-full flex-col space-y-2">
+						<Label htmlFor="format" className="text-muted-foreground text-sm">
+							Format
+						</Label>
+						<MultipleSelector
+							value={selectedTypeOptions}
+							onChange={handleTypeChange}
+							defaultOptions={typeOptions}
+							placeholder="Select formats..."
+							commandProps={{
+								label: "Select formats",
+							}}
+							emptyIndicator={
+								<p className="text-center text-sm">No formats found</p>
+							}
+							hideClearAllButton={false}
+							hidePlaceholderWhenSelected={true}
+							className="min-h-[38px] bg-background"
+						/>
+					</div>
+
+					{/* Publishing Status */}
+					<div className="flex w-full flex-col space-y-2">
+						<Label htmlFor="status" className="text-muted-foreground text-sm">
+							Publishing Status
+						</Label>
+						<MultipleSelector
+							value={selectedStatusOptions}
+							onChange={handleStatusChange}
+							defaultOptions={statusOptions}
+							placeholder="Select statuses..."
+							commandProps={{
+								label: "Select statuses",
+							}}
+							emptyIndicator={
+								<p className="text-center text-sm">No statuses found</p>
+							}
+							hideClearAllButton={false}
+							hidePlaceholderWhenSelected={true}
+							className="min-h-[38px] bg-background"
+						/>
+					</div>
+
+					{/* Reset Button */}
+					<div className="flex w-full flex-col space-y-2">
+						<Button
+							variant="outline"
+							onClick={handleReset}
+							className="h-[38px] w-full bg-background xl:w-1/2"
+						>
+							Reset
+						</Button>
+					</div>
+				</div>
+			</CardContent>
+		</Card>
+	);
+
+	return (
+		<div className="space-y-6">
+			{/* Mobile: collapsible filters */}
+			<div className="md:hidden">
+				<Accordion type="single" collapsible defaultValue="filters">
+					<AccordionItem value="filters">
+						<AccordionTrigger>Filters</AccordionTrigger>
+						<AccordionContent>{Filters()}</AccordionContent>
+					</AccordionItem>
+				</Accordion>
+			</div>
+
+			{/* Desktop: always visible filters */}
+			<div className="hidden md:block">{Filters()}</div>
 
 			{/* Search Results */}
 			{Object.values(criteria).some(

@@ -1,5 +1,11 @@
 "use client";
 
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@trackyrs/ui/components/accordion";
 import { Button } from "@trackyrs/ui/components/button";
 import { Card, CardContent } from "@trackyrs/ui/components/card";
 import { Input } from "@trackyrs/ui/components/input";
@@ -94,37 +100,85 @@ export default function PeopleSearchClient() {
 
 	return (
 		<div className="space-y-6">
-			<Card className="border-0 bg-transparent shadow-none">
-				<CardContent className="space-y-4 p-0">
-					<div className="grid w-full grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-						<div className="flex w-full flex-col space-y-2 xl:col-span-2">
-							<Label htmlFor="name" className="text-muted-foreground text-sm">
-								Name
-							</Label>
-							<div className="relative w-full">
-								<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
-								<Input
-									id="name"
-									placeholder="Type a person name..."
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									className="h-[38px] border border-input bg-white py-0 pl-10 leading-[38px]"
-								/>
+			{/* Mobile: collapsible filters */}
+			<div className="md:hidden">
+				<Accordion type="single" collapsible defaultValue="filters">
+					<AccordionItem value="filters">
+						<AccordionTrigger>Filters</AccordionTrigger>
+						<AccordionContent>
+							<Card className="border-0 bg-transparent shadow-none">
+								<CardContent className="space-y-4 p-0">
+									<div className="grid w-full grid-cols-1 items-end gap-4 xl:grid-cols-6">
+										<div className="flex w-full flex-col space-y-2 xl:col-span-2">
+											<Label
+												htmlFor="name"
+												className="text-muted-foreground text-sm"
+											>
+												Name
+											</Label>
+											<div className="relative w-full">
+												<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
+												<Input
+													id="name"
+													placeholder="Type a person name..."
+													value={name}
+													onChange={(e) => setName(e.target.value)}
+													className="h-[38px] border border-input bg-background py-0 pl-10 leading-[38px]"
+												/>
+											</div>
+										</div>
+
+										<div className="flex w-full flex-col space-y-2">
+											<Button
+												variant="outline"
+												onClick={onReset}
+												className="h-[38px] w-full bg-background xl:w-1/2"
+											>
+												Reset
+											</Button>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+						</AccordionContent>
+					</AccordionItem>
+				</Accordion>
+			</div>
+
+			{/* Desktop: always visible filters */}
+			<div className="hidden md:block">
+				<Card className="border-0 bg-transparent shadow-none">
+					<CardContent className="space-y-4 p-0">
+						<div className="grid w-full grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+							<div className="flex w-full flex-col space-y-2 xl:col-span-2">
+								<Label htmlFor="name" className="text-muted-foreground text-sm">
+									Name
+								</Label>
+								<div className="relative w-full">
+									<SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 z-10 h-4 w-4 transform text-muted-foreground" />
+									<Input
+										id="name"
+										placeholder="Type a person name..."
+										value={name}
+										onChange={(e) => setName(e.target.value)}
+										className="h-[38px] border border-input bg-background py-0 pl-10 leading-[38px]"
+									/>
+								</div>
+							</div>
+
+							<div className="flex w-full flex-col space-y-2">
+								<Button
+									variant="outline"
+									onClick={onReset}
+									className="h-[38px] w-full bg-background xl:w-1/2"
+								>
+									Reset
+								</Button>
 							</div>
 						</div>
-
-						<div className="flex w-full flex-col space-y-2">
-							<Button
-								variant="outline"
-								onClick={onReset}
-								className="h-[38px] w-full xl:w-1/2"
-							>
-								Reset
-							</Button>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+					</CardContent>
+				</Card>
+			</div>
 
 			{debouncedName ? (
 				<div className="space-y-4">
