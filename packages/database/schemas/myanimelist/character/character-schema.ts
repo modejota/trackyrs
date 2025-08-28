@@ -10,6 +10,7 @@ export const characterTable = pgTable(
 		images: text("images").notNull(),
 		about: text("about"),
 		nicknames: jsonb("nicknames").$type<string[]>(),
+		referenceFavorites: integer("reference_favorites").default(0),
 	},
 	(table) => ({
 		nameGinIdx: index("idx_character_name_gin").using(

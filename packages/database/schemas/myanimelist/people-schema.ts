@@ -21,6 +21,7 @@ export const peopleTable = pgTable(
 		birthday: timestamp("birthday", { mode: "string", withTimezone: false }),
 		about: text("about"),
 		images: text("images").notNull(),
+		referenceFavorites: integer("reference_favorites").default(0),
 	},
 	(table) => ({
 		nameGinIdx: index("idx_people_name_gin").using(

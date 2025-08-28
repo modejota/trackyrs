@@ -11,6 +11,7 @@ export class CharacterMapper {
 			images: ImageProcessor.extractOptimalImageUrl(data.images),
 			about: data.about,
 			nicknames: data.nicknames,
+			referenceFavorites: data.favorites,
 		};
 	}
 }

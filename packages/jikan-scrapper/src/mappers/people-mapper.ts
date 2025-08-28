@@ -13,6 +13,7 @@ export class PeopleMapper {
 			birthday: data.birthday,
 			images: ImageProcessor.extractOptimalImageUrl(data.images),
 			about: data.about,
+			referenceFavorites: data.favorites,
 		};
 	}
 }
