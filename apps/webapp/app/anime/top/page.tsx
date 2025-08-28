@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import ClientTopAnime from "@/app/anime/top/client";
+
+export const metadata: Metadata = { title: "Top Anime" };
 
 export default function TopAnimePage() {
 	return (

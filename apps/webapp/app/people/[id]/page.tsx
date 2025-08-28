@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ClientPeopleDetail from "@/app/people/[id]/client";
+
+export const metadata: Metadata = { title: "Person" };
 
 interface PeopleDetailPageProps {
 	params: Promise<{ id: string }>;

@@ -1,8 +1,13 @@
 import { Skeleton } from "@trackyrs/ui/components/skeleton";
 import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CardSkeleton } from "@/components/skeletons/card-skeleton";
 import LandingClient from "./landing-client";
+
+export const metadata: Metadata = {
+	title: "Home",
+};
 
 function LandingSkeleton() {
 	return (

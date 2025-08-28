@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import ClientProfile from "@/app/profile/[username]/client";
+
+export const metadata: Metadata = { title: "Profile" };
 
 interface ProfilePageProps {
 	params: Promise<{ username: string }>;

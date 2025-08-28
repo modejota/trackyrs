@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import ClientTopManga from "@/app/manga/top/client";
+
+export const metadata: Metadata = { title: "Top Manga" };
 
 export default function TopMangaPage() {
 	return (

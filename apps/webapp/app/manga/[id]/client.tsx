@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useMangaDetails } from "@/app/api/manga/queries";
 import { MangaHeroSection } from "@/app/manga/_components/manga-hero-section";
 import { MangaInformationSection } from "@/app/manga/_components/manga-information-section";
@@ -49,6 +49,18 @@ export default function ClientMangaDetail({ mangaId }: { mangaId: number }) {
 		isLoading,
 		isError,
 	} = useMangaDetails(mangaId);
+
+	useEffect(() => {
+		if (isLoading) {
+			document.title = "Trackyrs | Manga";
+			return;
+		}
+		const name = mangaCompleteData?.manga?.title;
+		document.title = name ? `Trackyrs | ${name}` : "Trackyrs | Manga";
+		return () => {
+			document.title = "Trackyrs";
+		};
+	}, [mangaCompleteData, isLoading]);
 
 	if (isLoading) {
 		return (

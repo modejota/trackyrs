@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import ClientOngoingManga from "@/app/manga/ongoing/client";
+
+export const metadata: Metadata = { title: "Ongoing Manga" };
 
 export default function OngoingMangaPage() {
 	return (

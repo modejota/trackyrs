@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ClientAnimeDetail from "@/app/anime/[id]/client";
+
+export const metadata: Metadata = { title: "Anime" };
 
 interface AnimeDetailPageProps {
 	params: Promise<{ id: string }>;

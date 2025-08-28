@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import PeopleSearchClient from "@/app/people/search/client";
+
+export const metadata: Metadata = { title: "People Search" };
 
 export default function Page() {
 	return (

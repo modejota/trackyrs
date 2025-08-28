@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useCharacterDetails } from "@/app/api/characters/queries";
 import { CharacterAppearancesSection } from "@/app/characters/_components/character-appearances-section";
 import { CharacterHeroSection } from "@/app/characters/_components/character-hero-section";
@@ -52,6 +52,18 @@ export default function ClientCharacterDetail({
 		isLoading,
 		isError,
 	} = useCharacterDetails(characterId);
+
+	useEffect(() => {
+		if (isLoading) {
+			document.title = "Trackyrs | Character";
+			return;
+		}
+		const name = characterData?.character?.name;
+		document.title = name ? `Trackyrs | ${name}` : "Trackyrs | Character";
+		return () => {
+			document.title = "Trackyrs";
+		};
+	}, [characterData, isLoading]);
 
 	if (isLoading) {
 		return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { AnimeHeroSection } from "@/app/anime/_components/anime-hero-section";
 import { AnimeInformationSection } from "@/app/anime/_components/anime-information-section";
 import { AnimeTabsSection } from "@/app/anime/_components/anime-tabs-section";
@@ -49,6 +49,18 @@ export default function ClientAnimeDetail({ animeId }: { animeId: number }) {
 		isLoading,
 		isError,
 	} = useAnimeDetails(animeId);
+
+	useEffect(() => {
+		if (isLoading) {
+			document.title = "Trackyrs | Anime";
+			return;
+		}
+		const name = animeCompleteData?.anime?.title;
+		document.title = name ? `Trackyrs | ${name}` : "Trackyrs | Anime";
+		return () => {
+			document.title = "Trackyrs";
+		};
+	}, [animeCompleteData, isLoading]);
 
 	if (isLoading) {
 		return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { usePeopleDetails } from "@/app/api/people/queries";
 import { PeopleContributionsSection } from "@/app/people/_components/people-contributions-section";
 import { PeopleHeroSection } from "@/app/people/_components/people-hero-section";
@@ -42,6 +42,18 @@ function PeopleNotFound() {
 
 export default function ClientPeopleDetail({ peopleId }: { peopleId: number }) {
 	const { data, isLoading, isError } = usePeopleDetails(peopleId);
+
+	useEffect(() => {
+		if (isLoading) {
+			document.title = "Trackyrs | Person";
+			return;
+		}
+		const name = data?.people?.name;
+		document.title = name ? `Trackyrs | ${name}` : "Trackyrs | Person";
+		return () => {
+			document.title = "Trackyrs";
+		};
+	}, [data, isLoading]);
 
 	if (isLoading) {
 		return (

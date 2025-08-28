@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Not Found" };
+
 import Link from "next/link";
 
 export default function NotFound() {
