@@ -17,6 +17,7 @@ import {
 import { cn } from "@trackyrs/ui/lib/utils";
 import { BookOpenIcon, InfoIcon, LifeBuoyIcon, Menu } from "lucide-react";
 import Image from "next/image";
+import GlobalSearch from "@/components/navbar/global-search";
 import { navigationLinks } from "@/components/navbar/navigation-links";
 import UserMenu from "@/components/user-menu";
 import { authClient } from "@/lib/auth-client";
@@ -185,6 +186,7 @@ export function Navbar() {
 				</div>
 				{/* Right side */}
 				<div className="flex items-center gap-2">
+					<GlobalSearch />
 					{isPending ? (
 						<div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
 					) : session ? (
