@@ -303,4 +303,40 @@ export default class MangaRepository {
 			.limit(limit)
 			.offset(offset);
 	}
+
+	static async quickSearch(title: string, limit = 6, offset = 0) {
+		const trimmed = title.trim();
+		if (!trimmed)
+			return [] as Array<{
+				id: number;
+				title: string;
+				titleEnglish: string | null;
+				titleJapanese: string | null;
+				images: string;
+			}>;
+		const pattern = `%${trimmed}%`;
+
+		return await database
+			.select({
+				id: mangaTable.id,
+				title: mangaTable.title,
+				titleEnglish: mangaTable.titleEnglish,
+				titleJapanese: mangaTable.titleJapanese,
+				images: mangaTable.images,
+			})
+			.from(mangaTable)
+			.where(
+				or(
+					ilike(mangaTable.title, pattern),
+					ilike(mangaTable.titleEnglish, pattern),
+				),
+			)
+			.orderBy(
+				sql`${mangaTable.referenceScore} IS NULL`,
+				desc(mangaTable.referenceScore),
+				asc(mangaTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
+	}
 }

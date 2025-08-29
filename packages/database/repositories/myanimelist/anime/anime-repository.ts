@@ -316,4 +316,41 @@ export default class AnimeRepository {
 			.limit(limit)
 			.offset(offset);
 	}
+
+	// Lightweight search for global queries: only core fields, no joins
+	static async quickSearch(title: string, limit = 6, offset = 0) {
+		const trimmed = title.trim();
+		if (!trimmed)
+			return [] as Array<{
+				id: number;
+				title: string;
+				titleEnglish: string | null;
+				titleJapanese: string | null;
+				images: string;
+			}>;
+		const pattern = `%${trimmed}%`;
+
+		return await database
+			.select({
+				id: animeTable.id,
+				title: animeTable.title,
+				titleEnglish: animeTable.titleEnglish,
+				titleJapanese: animeTable.titleJapanese,
+				images: animeTable.images,
+			})
+			.from(animeTable)
+			.where(
+				or(
+					ilike(animeTable.title, pattern),
+					ilike(animeTable.titleEnglish, pattern),
+				),
+			)
+			.orderBy(
+				sql`${animeTable.referenceScore} IS NULL`,
+				desc(animeTable.referenceScore),
+				asc(animeTable.title),
+			)
+			.limit(limit)
+			.offset(offset);
+	}
 }

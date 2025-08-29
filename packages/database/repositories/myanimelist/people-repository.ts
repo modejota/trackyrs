@@ -124,4 +124,31 @@ export default class PeopleRepository {
 			.limit(limit)
 			.offset(offset);
 	}
+
+	static async quickSearch(name: string, limit = 6, offset = 0) {
+		const trimmed = name.trim();
+		if (!trimmed)
+			return [] as Array<{
+				id: number;
+				name: string;
+				givenName: string | null;
+				familyName: string | null;
+				images: string;
+			}>;
+		const pattern = `%${trimmed}%`;
+
+		return await database
+			.select({
+				id: peopleTable.id,
+				name: peopleTable.name,
+				givenName: peopleTable.givenName,
+				familyName: peopleTable.familyName,
+				images: peopleTable.images,
+			})
+			.from(peopleTable)
+			.where(ilike(peopleTable.name, pattern))
+			.orderBy(desc(peopleTable.referenceFavorites), asc(peopleTable.name))
+			.limit(limit)
+			.offset(offset);
+	}
 }

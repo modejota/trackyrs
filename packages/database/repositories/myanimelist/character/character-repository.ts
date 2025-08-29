@@ -132,4 +132,32 @@ export default class CharacterRepository {
 			.limit(limit)
 			.offset(offset);
 	}
+
+	static async quickSearch(name: string, limit = 6, offset = 0) {
+		const trimmed = name.trim();
+		if (!trimmed)
+			return [] as Array<{
+				id: number;
+				name: string;
+				nameKanji: string | null;
+				images: string;
+			}>;
+		const pattern = `%${trimmed}%`;
+
+		return await database
+			.select({
+				id: characterTable.id,
+				name: characterTable.name,
+				nameKanji: characterTable.nameKanji,
+				images: characterTable.images,
+			})
+			.from(characterTable)
+			.where(ilike(characterTable.name, pattern))
+			.orderBy(
+				desc(characterTable.referenceFavorites),
+				asc(characterTable.name),
+			)
+			.limit(limit)
+			.offset(offset);
+	}
 }
