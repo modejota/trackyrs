@@ -33,14 +33,15 @@ export function LoginForm() {
 	});
 
 	async function onSubmit(data: LoginFormData) {
-		await authClient.signIn.username({
-			username: data.identifier,
+		const isEmail = (value: string) => /[^\s@]+@[^\s@]+\.[^\s@]+/.test(value);
+
+		const commonOptions = {
 			password: data.password,
 			callbackURL: "/",
 			fetchOptions: {
 				onRequest: () => setIsLoading(true),
 				onResponse: () => setIsLoading(false),
-				onError: (ctx) => {
+				onError: (ctx: { error?: { message?: string } }) => {
 					toast.custom(() => (
 						<ErrorToast
 							message={
@@ -59,7 +60,20 @@ export function LoginForm() {
 					router.push("/");
 				},
 			},
-		});
+		};
+
+		const identifier = data.identifier.trim();
+		if (isEmail(identifier)) {
+			await authClient.signIn.email({
+				...commonOptions,
+				email: identifier,
+			});
+		} else {
+			await authClient.signIn.username({
+				...commonOptions,
+				username: identifier,
+			});
+		}
 	}
 
 	return (
@@ -102,6 +116,15 @@ export function LoginForm() {
 						</FormItem>
 					)}
 				/>
+
+				<div className="text-right">
+					<a
+						href="/forgot-password"
+						className="font-medium text-primary text-sm hover:text-primary/80"
+					>
+						Forgot your password?
+					</a>
+				</div>
 
 				<Button type="submit" className="w-full" disabled={isLoading}>
 					{isLoading ? "Signing in..." : "Sign in"}
