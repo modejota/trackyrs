@@ -6,6 +6,7 @@ import animeController from "@/controllers/anime-controller";
 import characterController from "@/controllers/character-controller";
 import mangaController from "@/controllers/manga-controller";
 import peopleController from "@/controllers/people-controller";
+import searchController from "@/controllers/search-controller";
 import userController from "@/controllers/user-controller";
 
 const app = new Hono<{ Bindings: AuthType }>({
@@ -33,5 +34,6 @@ app.route("/api/manga", mangaController);
 app.route("/api/users", userController);
 app.route("/api/characters", characterController);
 app.route("/api/people", peopleController);
+app.route("/api/search", searchController);
 
 export default app;
