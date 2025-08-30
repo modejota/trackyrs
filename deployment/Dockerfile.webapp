@@ -1,0 +1,17 @@
+FROM node:22.19-alpine
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install -g bun
+RUN bun install
+
+WORKDIR /app/apps/webapp
+RUN bun run build
+
+ENV NODE_ENV=production
+ENV PORT=3001
+EXPOSE 3001
+
+CMD ["bun", "run", "start"]

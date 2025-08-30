@@ -67,9 +67,9 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/$USER/deployment
-ExecStart=/usr/local/bin/docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
-ExecStop=/usr/local/bin/docker-compose -f docker-compose.prod.yml --env-file .env.production down
+WorkingDirectory=/home/$USER/trackyrs
+ExecStart=/usr/local/bin/docker compose --file deployment/production-compose.yaml up -d
+ExecStop=/usr/local/bin/docker compose --file deployment/production-compose.yaml down
 User=$USER
 Group=docker
 
@@ -105,4 +105,6 @@ echo "Please reboot the instance to ensure all changes take effect."
 echo "When your NGINX vhosts are in place, get certs with:"
 echo "  sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com"
 echo "Or for a dry run: sudo certbot renew --dry-run"
-echo "You may now proceed cloning the repo, building the apps and preparing the database"
+echo "You may now proceed cloning the repo, preparing the database and building/running the containers"
+
+# docker compose --file deployment/production-compose.yaml up -d (it is required to create a .env in that directory with all ENV variables)

@@ -4,7 +4,6 @@
 	"scripts": {
 		"build": "turbo run build --filter=@trackyrs/webapp",
 		"dev": "turbo run dev --filter=@trackyrs/webapp --filter=@trackyrs/server",
-		"start": "turbo run start --filter=@trackyrs/server --filter=@trackyrs/webapp",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write"
 	},
