@@ -171,6 +171,9 @@ export function OverviewTab() {
 	const [animeChart, setAnimeChart] = useState<string>("genres");
 	const [mangaChart, setMangaChart] = useState<string>("genres");
 
+	const hasAnime = (animeStats?.total ?? 0) > 0;
+	const hasManga = (mangaStats?.total ?? 0) > 0;
+
 	if (loading) {
 		return (
 			<div className="space-y-4">
@@ -226,63 +229,72 @@ export function OverviewTab() {
 					<h4 className="font-semibold text-muted-foreground text-sm">
 						Charts
 					</h4>
-					<ChartSelector
-						value={animeChart}
-						onChange={setAnimeChart}
-						options={[
-							{ value: "status", label: "Status" },
-							{ value: "genres", label: "Genres" },
-							{ value: "season", label: "By year & season" },
-							{ value: "scores", label: "Score distribution" },
-							{ value: "episodes", label: "Episodes watched per anime" },
-						]}
-					/>
-				</div>
-				<div className="grid grid-cols-1 gap-4">
-					{animeChart === "status" && (
-						<PieChartCard
-							title="Status"
-							data={animeStats?.statusPie ?? []}
-							kind="status-anime"
-						/>
-					)}
-					{animeChart === "genres" && (
-						<PieChartCard
-							title="Genres"
-							data={animeStats?.genresPie ?? []}
-							kind="genre"
-							footerText={
-								animeStats?.mostWatchedGenre
-									? `Your most watched genre is ${capitalizeSentenceWordByWord(animeStats.mostWatchedGenre)}`
-									: undefined
-							}
-						/>
-					)}
-					{animeChart === "season" && (
-						<YearSeasonBarsCard
-							title="By year & season"
-							data={animeStats?.yearSeasonBars ?? []}
-							footerText={
-								animeStats?.topSeasonYear
-									? `Season ${animeStats.topSeasonYear.season} from Year ${animeStats.topSeasonYear.year} was the one you watched more anime from`
-									: undefined
-							}
-						/>
-					)}
-					{animeChart === "scores" && (
-						<HistogramCard
-							title="Score distribution"
-							data={animeStats?.scoreHistogram ?? []}
-							detailed={animeStats?.scoreHistogramDetailed}
-						/>
-					)}
-					{animeChart === "episodes" && (
-						<EpisodesWatchedBarsCard
-							title="Episodes watched per anime"
-							data={animeStats?.episodesWatchedHistogram ?? []}
+					{hasAnime && (
+						<ChartSelector
+							value={animeChart}
+							onChange={setAnimeChart}
+							options={[
+								{ value: "status", label: "Status" },
+								{ value: "genres", label: "Genres" },
+								{ value: "season", label: "By year & season" },
+								{ value: "scores", label: "Score distribution" },
+								{ value: "episodes", label: "Episodes watched per anime" },
+							]}
 						/>
 					)}
 				</div>
+				{hasAnime ? (
+					<div className="grid grid-cols-1 gap-4">
+						{animeChart === "status" && (
+							<PieChartCard
+								title="Status"
+								data={animeStats?.statusPie ?? []}
+								kind="status-anime"
+							/>
+						)}
+						{animeChart === "genres" && (
+							<PieChartCard
+								title="Genres"
+								data={animeStats?.genresPie ?? []}
+								kind="genre"
+								footerText={
+									animeStats?.mostWatchedGenre
+										? `Your most watched genre is ${capitalizeSentenceWordByWord(animeStats.mostWatchedGenre)}`
+										: undefined
+								}
+							/>
+						)}
+						{animeChart === "season" && (
+							<YearSeasonBarsCard
+								title="By year & season"
+								data={animeStats?.yearSeasonBars ?? []}
+								footerText={
+									animeStats?.topSeasonYear
+										? `Season ${animeStats.topSeasonYear.season} from Year ${animeStats.topSeasonYear.year} was the one you watched more anime from`
+										: undefined
+								}
+							/>
+						)}
+						{animeChart === "scores" && (
+							<HistogramCard
+								title="Score distribution"
+								data={animeStats?.scoreHistogram ?? []}
+								detailed={animeStats?.scoreHistogramDetailed}
+							/>
+						)}
+						{animeChart === "episodes" && (
+							<EpisodesWatchedBarsCard
+								title="Episodes watched per anime"
+								data={animeStats?.episodesWatchedHistogram ?? []}
+							/>
+						)}
+					</div>
+				) : (
+					<div className="rounded-md border p-4 text-muted-foreground text-sm">
+						Once you start tracking anime, here you can visualize some cool
+						graphs
+					</div>
+				)}
 			</section>
 
 			<section className="space-y-3">
@@ -309,43 +321,52 @@ export function OverviewTab() {
 					<h4 className="font-semibold text-muted-foreground text-sm">
 						Charts
 					</h4>
-					<ChartSelector
-						value={mangaChart}
-						onChange={setMangaChart}
-						options={[
-							{ value: "status", label: "Status" },
-							{ value: "genres", label: "Genres" },
-							{ value: "scores", label: "Score distribution" },
-						]}
-					/>
-				</div>
-				<div className="grid grid-cols-1 gap-4">
-					{mangaChart === "status" && (
-						<PieChartCard
-							title="Status"
-							data={mangaStats?.statusPie ?? []}
-							kind="status-manga"
-						/>
-					)}
-					{mangaChart === "genres" && (
-						<PieChartCard
-							title="Genres"
-							data={mangaStats?.genresPie ?? []}
-							kind="genre"
-							footerText={
-								mangaStats?.mostReadGenre
-									? `Your most read genre is ${capitalizeSentenceWordByWord(mangaStats.mostReadGenre)}`
-									: undefined
-							}
-						/>
-					)}
-					{mangaChart === "scores" && (
-						<HistogramCard
-							title="Score distribution"
-							data={mangaStats?.scoreHistogram ?? []}
+					{hasManga && (
+						<ChartSelector
+							value={mangaChart}
+							onChange={setMangaChart}
+							options={[
+								{ value: "status", label: "Status" },
+								{ value: "genres", label: "Genres" },
+								{ value: "scores", label: "Score distribution" },
+							]}
 						/>
 					)}
 				</div>
+				{hasManga ? (
+					<div className="grid grid-cols-1 gap-4">
+						{mangaChart === "status" && (
+							<PieChartCard
+								title="Status"
+								data={mangaStats?.statusPie ?? []}
+								kind="status-manga"
+							/>
+						)}
+						{mangaChart === "genres" && (
+							<PieChartCard
+								title="Genres"
+								data={mangaStats?.genresPie ?? []}
+								kind="genre"
+								footerText={
+									mangaStats?.mostReadGenre
+										? `Your most read genre is ${capitalizeSentenceWordByWord(mangaStats.mostReadGenre)}`
+										: undefined
+								}
+							/>
+						)}
+						{mangaChart === "scores" && (
+							<HistogramCard
+								title="Score distribution"
+								data={mangaStats?.scoreHistogram ?? []}
+							/>
+						)}
+					</div>
+				) : (
+					<div className="rounded-md border p-4 text-muted-foreground text-sm">
+						Once you start tracking manga, here you can visualize some cool
+						graphs
+					</div>
+				)}
 			</section>
 		</div>
 	);

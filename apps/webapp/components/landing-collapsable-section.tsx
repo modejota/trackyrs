@@ -4,7 +4,7 @@ import type { Anime } from "@trackyrs/database/schemas/myanimelist/anime/anime-s
 import type { Manga } from "@trackyrs/database/schemas/myanimelist/manga/manga-schema";
 import { Button } from "@trackyrs/ui/components/button";
 import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, CircleX } from "lucide-react";
 import { useState } from "react";
 import { AnimeCard } from "@/app/anime/_components/anime-card";
 import { TopAnimeCard } from "@/app/anime/_components/anime-top-card";
@@ -17,6 +17,8 @@ interface LandingCollapsableSectionProps {
 	subtitle?: string;
 	items: (Anime | Manga)[];
 	isLoading?: boolean;
+	isError?: boolean;
+	onRetry?: () => void;
 	itemType: "anime" | "manga";
 	showRanking?: boolean;
 	className?: string;
@@ -27,6 +29,8 @@ export function LandingCollapsableSection({
 	subtitle,
 	items,
 	isLoading = false,
+	isError = false,
+	onRetry,
 	itemType,
 	showRanking = false,
 	className = "",
@@ -50,6 +54,39 @@ export function LandingCollapsableSection({
 					{generateArray("landing-carousel-skeleton", 6).map((key) => (
 						<CardSkeleton key={key} />
 					))}
+				</div>
+			</div>
+		);
+	}
+
+	if (isError) {
+		return (
+			<div className={`space-y-4 ${className}`}>
+				<div className="sticky top-0 z-20 mb-6 border-b bg-background py-4">
+					<div className="flex items-center justify-between">
+						<div>
+							<h2 className="font-bold text-2xl">{title}</h2>
+							{subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+						</div>
+					</div>
+				</div>
+				<div className="py-10 text-center">
+					<div className="mx-auto max-w-md">
+						<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">
+							<CircleX className="h-7 w-7 text-muted-foreground" />
+						</div>
+						<h3 className="mb-2 font-semibold text-lg">
+							Couldn’t load this section
+						</h3>
+						<p className="text-muted-foreground text-sm">
+							There was an error while loading this content. Please try again.
+						</p>
+						{onRetry && (
+							<div className="mt-4">
+								<Button onClick={onRetry}>Try again</Button>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 		);

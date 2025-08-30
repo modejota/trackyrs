@@ -20,7 +20,6 @@ import { ProfileLoadingSkeleton } from "../_components/profile-loading-skeleton"
 export default function ClientProfile({ username }: { username: string }) {
 	const { data, isLoading, isError } = useUserByUsername(username);
 	useEffect(() => {
-		// Set the tab title using the username immediately; refine if display name differs
 		document.title = `Trackyrs | ${username}`;
 		return () => {
 			document.title = "Trackyrs";

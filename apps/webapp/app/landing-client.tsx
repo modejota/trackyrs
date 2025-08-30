@@ -30,6 +30,8 @@ export default function LandingClient() {
 				subtitle="Currently airing this season"
 				items={currentSeasonQuery.data?.animes ?? []}
 				isLoading={currentSeasonQuery.isLoading}
+				isError={currentSeasonQuery.isError}
+				onRetry={() => currentSeasonQuery.refetch()}
 				itemType="anime"
 			/>
 
@@ -39,6 +41,8 @@ export default function LandingClient() {
 				subtitle="Upcoming next season"
 				items={nextSeasonQuery.data?.animes ?? []}
 				isLoading={nextSeasonQuery.isLoading}
+				isError={nextSeasonQuery.isError}
+				onRetry={() => nextSeasonQuery.refetch()}
 				itemType="anime"
 			/>
 
@@ -48,6 +52,8 @@ export default function LandingClient() {
 				subtitle="Highest rated series"
 				items={topAnimeQuery.data?.animes ?? []}
 				isLoading={topAnimeQuery.isLoading}
+				isError={topAnimeQuery.isError}
+				onRetry={() => topAnimeQuery.refetch()}
 				itemType="anime"
 				showRanking={true}
 			/>
@@ -58,6 +64,8 @@ export default function LandingClient() {
 				subtitle="Currently publishing series"
 				items={ongoingMangaQuery.data?.mangas ?? []}
 				isLoading={ongoingMangaQuery.isLoading}
+				isError={ongoingMangaQuery.isError}
+				onRetry={() => ongoingMangaQuery.refetch()}
 				itemType="manga"
 			/>
 
@@ -67,6 +75,8 @@ export default function LandingClient() {
 				subtitle="Highest rated series"
 				items={topMangaQuery.data?.mangas ?? []}
 				isLoading={topMangaQuery.isLoading}
+				isError={topMangaQuery.isError}
+				onRetry={() => topMangaQuery.refetch()}
 				itemType="manga"
 				showRanking={true}
 			/>
