@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Anime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
 import { UserTracksAnimeStatus } from "@trackyrs/database/types/anime-tracks";
+import { Badge } from "@trackyrs/ui/components/badge";
 import { Button } from "@trackyrs/ui/components/button";
 import { Calendar } from "@trackyrs/ui/components/calendar";
 import {
@@ -44,7 +45,7 @@ import { SuccessToast } from "@trackyrs/ui/components/toasts/success-toast";
 import { cn } from "@trackyrs/ui/lib/utils";
 import { capitalize } from "@trackyrs/utils/src/string";
 import { format } from "date-fns";
-import { MoreVertical, Star } from "lucide-react";
+import { ArrowRight, MoreVertical, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -169,6 +170,32 @@ export function AnimeHeroSection({ data }: AnimeHeroSectionProps) {
 			.split("_")
 			.map((part) => capitalize(part.toLowerCase()))
 			.join(" ");
+	}
+
+	function toEmbedUrl(raw: string): string | null {
+		try {
+			const url = new URL(raw);
+			const host = url.hostname.replace(/^www\./, "").toLowerCase();
+			if (host === "youtu.be") {
+				const id = url.pathname.split("/").filter(Boolean)[0];
+				if (id) return `https://www.youtube-nocookie.com/embed/${id}`;
+			}
+			if (
+				host === "youtube.com" ||
+				host === "m.youtube.com" ||
+				host === "music.youtube.com" ||
+				host === "youtube-nocookie.com"
+			) {
+				if (url.pathname.startsWith("/embed/")) {
+					return `https://www.youtube-nocookie.com${url.pathname}`;
+				}
+				const id = url.searchParams.get("v");
+				if (id) return `https://www.youtube-nocookie.com/embed/${id}`;
+			}
+			return url.toString();
+		} catch {
+			return null;
+		}
 	}
 
 	return (
@@ -682,6 +709,44 @@ export function AnimeHeroSection({ data }: AnimeHeroSectionProps) {
 							{data.synopsis ??
 								"No synopsis information has been added to this title."}
 						</div>
+						{data.trailer ? (
+							<Dialog>
+								<DialogTrigger asChild>
+									<Badge
+										asChild
+										variant="secondary"
+										className="mt-2 cursor-pointer px-3 py-1.5 text-sm"
+									>
+										<button
+											type="button"
+											aria-label="Watch trailer"
+											className="inline-flex items-center gap-1.5"
+										>
+											Watch trailer
+											<ArrowRight className="size-4" aria-hidden="true" />
+										</button>
+									</Badge>
+								</DialogTrigger>
+								<DialogContent className="overflow-hidden p-0 sm:max-w-3xl">
+									<DialogHeader className="hidden px-6 py-4">
+										<DialogTitle>Trailer</DialogTitle>
+										<DialogDescription className="sr-only">
+											Watch the trailer for {data.title}
+										</DialogDescription>
+									</DialogHeader>
+									<div className="relative aspect-[16/9] w-full">
+										<iframe
+											title={`${data.title} trailer`}
+											src={toEmbedUrl(data.trailer) ?? data.trailer}
+											allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+											allowFullScreen
+											referrerPolicy="strict-origin-when-cross-origin"
+											className="absolute inset-0 h-full w-full"
+										/>
+									</div>
+								</DialogContent>
+							</Dialog>
+						) : null}
 					</div>
 				</div>
 			</div>
