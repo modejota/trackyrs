@@ -18,6 +18,7 @@ import { Label } from "@trackyrs/ui/components/label";
 import MultipleSelector, {
 	type Option,
 } from "@trackyrs/ui/components/multiselect";
+import { Spinner } from "@trackyrs/ui/components/spinner";
 import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
 import { CircleX, Search, Search as SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -385,7 +386,18 @@ export function AnimeSearchClient({
 					(Array.isArray(val) ? val.length > 0 : true),
 			) && (
 				<div className="space-y-4">
-					{isLoading ? null : isError ? (
+					{isLoading ? (
+						<div className="py-12 text-center">
+							<div className="mx-auto max-w-md">
+								<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">
+									<Spinner className="h-7 w-7 text-muted-foreground" />
+								</div>
+								<p className="mt-2 text-muted-foreground text-sm">
+									Loading results…
+								</p>
+							</div>
+						</div>
+					) : isError ? (
 						<div className="py-12 text-center">
 							<div className="mx-auto max-w-md">
 								<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">

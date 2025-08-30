@@ -10,6 +10,7 @@ import { Button } from "@trackyrs/ui/components/button";
 import { Card, CardContent } from "@trackyrs/ui/components/card";
 import { Input } from "@trackyrs/ui/components/input";
 import { Label } from "@trackyrs/ui/components/label";
+import { Spinner } from "@trackyrs/ui/components/spinner";
 import { generateArray } from "@trackyrs/utils/src/react-list-key-generator";
 import { CircleX, Search, Search as SearchIcon } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -154,7 +155,18 @@ export function CharacterSearchClient() {
 
 			{debouncedName ? (
 				<div className="space-y-4">
-					{isLoading ? null : isError ? (
+					{isLoading ? (
+						<div className="py-12 text-center">
+							<div className="mx-auto max-w-md">
+								<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">
+									<Spinner className="h-7 w-7 text-muted-foreground" />
+								</div>
+								<p className="mt-2 text-muted-foreground text-sm">
+									Loading results…
+								</p>
+							</div>
+						</div>
+					) : isError ? (
 						<div className="py-12 text-center">
 							<div className="mx-auto max-w-md">
 								<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted p-4">
