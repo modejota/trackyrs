@@ -6,6 +6,7 @@ import {
 	user,
 	verification,
 } from "@trackyrs/database/schemas/auth-schema";
+import { EmailService } from "@trackyrs/email/email-service";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { username } from "better-auth/plugins";
@@ -23,6 +24,12 @@ export const auth = betterAuth({
 		minPasswordLength: 8,
 		maxPasswordLength: 32,
 		autoSignIn: true,
+		resetPasswordTokenExpiresIn: 3600,
+		sendResetPassword: async ({ user, url, token }) => {
+			// @ts-ignore: Suppressing the missing 'username' property error. Better-auth schema isn't being correctly inferred
+			await EmailService.sendPasswordResetEmail({ user, url, token });
+		},
+		revokeSessionsOnPasswordReset: true,
 	},
 	plugins: [
 		username({

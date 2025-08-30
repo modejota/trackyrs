@@ -1,0 +1,18 @@
+{
+	"extends": "@trackyrs/typescript-config/base.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"target": "esnext",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "react-jsx",
+		"incremental": true,
+		"outDir": "./dist",
+		"rootDir": "./",
+		"baseUrl": "./"
+	},
+	"include": ["./**/*"],
+	"exclude": ["node_modules", "dist"]
+}
