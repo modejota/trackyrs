@@ -97,10 +97,10 @@ export function Navbar() {
 						>
 							<Image
 								className="dark:invert"
-								src="/globe.svg"
+								src="/logo.webp"
 								alt="Home"
-								width={20}
-								height={20}
+								width={32}
+								height={32}
 							/>
 						</a>
 						{/* Navigation menu */}
