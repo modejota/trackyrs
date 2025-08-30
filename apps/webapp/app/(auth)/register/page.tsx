@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Register" };
 
 export default function RegisterPage() {
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+		<div className="flex h-screen items-center justify-center bg-background px-4 sm:px-6 lg:px-8">
 			<div className="w-full max-w-md space-y-8">
 				<Card className="border-border">
 					<CardHeader className="space-y-1 text-center">
