@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "next dev --turbopack --port 3001",
 		"build": "next build --turbopack",
-		"start": "BUN_OPTIONS=--bun next start"
+		"start": "next start --port 3001"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.1",
