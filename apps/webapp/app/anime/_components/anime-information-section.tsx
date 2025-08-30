@@ -1,4 +1,6 @@
 import type { Anime } from "@trackyrs/database/schemas/myanimelist/anime/anime-schema";
+import type { GenreWithInfo as AnimeGenreWithInfo } from "@trackyrs/database/types/anime-with-relations";
+import { Badge } from "@trackyrs/ui/components/badge";
 import {
 	convertBroadcastDayAndTimeToString,
 	convertSecondsDurationToString,
@@ -8,11 +10,20 @@ import {
 
 interface AnimeInformationSectionProps {
 	anime: Anime;
+	genres?: AnimeGenreWithInfo[];
 }
 
 export function AnimeInformationSection({
 	anime,
+	genres,
 }: AnimeInformationSectionProps) {
+	const genreNames = Array.from(
+		new Set(
+			(genres ?? [])
+				.map((g) => (g as any)?.genre?.name ?? (g as any)?.genres?.name)
+				.filter((name): name is string => Boolean(name)),
+		),
+	);
 	return (
 		<section
 			className="w-full rounded-lg border bg-card p-6"
@@ -132,6 +143,22 @@ export function AnimeInformationSection({
 							Year
 						</h3>
 						<p className="text-base text-foreground/70">{anime.year}</p>
+					</div>
+				)}
+
+				{/* Genres */}
+				{genreNames.length > 0 && (
+					<div className="space-y-1 md:col-span-2 lg:col-span-3">
+						<h3 className="font-semibold text-foreground text-sm tracking-wide">
+							Genres
+						</h3>
+						<div className="flex flex-wrap gap-2">
+							{genreNames.map((name) => (
+								<Badge key={name} variant="secondary">
+									{name}
+								</Badge>
+							))}
+						</div>
 					</div>
 				)}
 			</div>

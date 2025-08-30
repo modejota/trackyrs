@@ -93,7 +93,10 @@ export default function ClientAnimeDetail({ animeId }: { animeId: number }) {
 				<section aria-labelledby="anime-information-heading">
 					<ErrorBoundary fallback={<AnimeOrMangaInformationSkeleton />}>
 						<Suspense fallback={<AnimeOrMangaInformationSkeleton />}>
-							<AnimeInformationSection anime={animeCompleteData.anime} />
+							<AnimeInformationSection
+								anime={animeCompleteData.anime}
+								genres={animeCompleteData.genres}
+							/>
 						</Suspense>
 					</ErrorBoundary>
 				</section>
